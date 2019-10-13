@@ -27,6 +27,7 @@ lunch lineage_star2lte-userdebug
 make bacon -j$(nproc --all)
 cd ..
 mkdir compiled/
+sleep 5
 if [ -d ~/rom/out/target/product/starlte ] && [ -d ~/rom/out/target/product/star2lte ]
 	then
 		mv ~/rom/out/target/product/star*/lineage-1*.zip ~/compiled/
