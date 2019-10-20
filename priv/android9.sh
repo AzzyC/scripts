@@ -1,15 +1,17 @@
 #!/bin/bash
 sudo apt update && sudo apt upgrade -y
+sudo apt install -y openjdk-8-jdk python-lunch
 git config --global user.name AzzyC
 git config --global user.email azmath2000@gmail.com
 git config --global color.ui true
+if [ -d /usr/lib/jvm/java-8-openjdk-amd64/bin/ ];then
+export PATH=/usr/lib/jvm/java-8-openjdk-amd64/bin/:$PATH
+fi
 cd
 git clone https://github.com/akhilnarang/scripts.git build_env --depth=1
 cd build_env/
 sudo chmod +x setup/android_build_env.sh
 . setup/android_build_env.sh
-sudo apt install -y openjdk-8-jdk python-lunch
-sudo update-alternatives --config java
 cd
 mkdir rom/ && cd rom/
 repo init -u git://github.com/LineageOS/android.git -b lineage-16.0 --no-clone-bundle --depth=1
