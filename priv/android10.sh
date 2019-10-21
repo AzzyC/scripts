@@ -24,9 +24,9 @@ git apply device/samsung/universal9810-common/patches/0002-Calculate-gsmdBm-from
 git apply device/samsung/universal9810-common/patches/0003-colorspace-hwc-fix.patch
 . build/envsetup.sh
 lunch lineage_starlte-userdebug
-make bacon -j$(nproc --all)
+make bacon -j$(nproc --all) 2>&1 | tee ../make_starlte_android10.txt
 lunch lineage_star2lte-userdebug
-make bacon -j$(nproc --all)
+make bacon -j$(nproc --all) 2>&1 | tee ../make_star2lte_android10.txt
 cd ..
 mkdir compiled/
 sleep 5
