@@ -1,8 +1,11 @@
+trash=~/.local/share/Trash/files
 echo ""
-if [ -d ~/.local/share/Trash/files ]
+if [ -d $trash ]
 then
 	echo "Current files & size of Recycle Bin:"
-	ls -AhsXx --color=always ~/.local/share/Trash/files
+	ls -AXx --color=always $trash
+	echo
+	du -hs $trash
 # -A = Show 'dot' files
 # -h = Human Readable File/Directories sizes
 # -s = Show File/Directories sizes
