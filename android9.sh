@@ -23,8 +23,10 @@ git apply device/samsung/universal9810-common/patches/0003-colorspace-hwc-fix.pa
 . build/envsetup.sh
 lunch lineage_starlte-userdebug
 make bacon -j$(nproc --all) 2>&1 | tee ../make_starlte_android9.txt
+grep -iE --color=always 'crash|error|fail|fatal' ../make_starlte_android9.txt 2>&1 | tee ../trim_errors_starlte_android9.txt
 lunch lineage_star2lte-userdebug
 make bacon -j$(nproc --all) 2>&1 | tee ../make_star2lte_android9.txt
+grep -iE --color=always 'crash|error|fail|fatal' ../make_star2lte_android9.txt 2>&1 | tee ../trim_errors_star2lte_android9.txt
 cd ..
 mkdir compiled/
 sleep 5
