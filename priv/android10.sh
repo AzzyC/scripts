@@ -51,16 +51,17 @@ grep -iE --color=always 'crash|error|fail|fatal' ../make_star2lte_android10.txt 
 telegram -f ../make_star2lte_android10.txt "Build completed in "$makestar2timeM" minutes or "$makestar2timeS" seconds"
 telegram -f ../trim_errors_star2lte_android10.txt "Trimmed errors from make_star2lte_android10 (if any)"
 cd ..
-mkdir compiled/
+date=`date +%d-%m-%y`
+mkdir $date/
 sleep 5
 if [ -d ~/rom/out/target/product/starlte ] && [ -d ~/rom/out/target/product/star2lte ]
 	then
-		mv ~/rom/out/target/product/star*/lineage-1*.zip ~/compiled/
-		mv ~/rom/out/target/product/star*/lineage-1*.zip.md5sum ~/compiled/
+		mv ~/rom/out/target/product/star*/lineage-1*.zip ~/$date/
+		mv ~/rom/out/target/product/star*/lineage-1*.zip.md5sum ~/$date/
 fi
 wget https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-x64
 chmod +x gdrive-linux-x64
 sudo install gdrive-linux-x64 /usr/local/bin/gdrive
-gdrive about
-# Provide Verification Code
-gdrive upload -r compiled
+gdrive upload -p 1qp133uQXFNur6tKqbs251uJ5CLCUxBgI -r $date
+telegram -MD "Uploads completed,
+[View Drive](https://drive.google.com/open?id=1qp133uQXFNur6tKqbs251uJ5CLCUxBgI)"
