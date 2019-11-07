@@ -1,11 +1,12 @@
 #!/bin/bash
+rom_out=~/rom/out/target/product
 cd
 sudo apt update && sudo apt upgrade -y
 sudo apt install -y openjdk-8-jdk python-lunch
 git config --global user.name AzzyC
 git config --global user.email azmath2000@gmail.com
 git config --global color.ui true
-if [ -d /usr/lib/jvm/java-8-openjdk-amd64/bin/ ];then
+if [ -d /usr/lib/jvm/java-8-openjdk-amd64/bin/ ]; then
 export PATH=/usr/lib/jvm/java-8-openjdk-amd64/bin/:$PATH
 fi
 git clone https://github.com/akhilnarang/scripts.git build_env --depth=1
@@ -38,6 +39,7 @@ makestarend=`date +%s`
 makestartimeM=$(((makestarend-makestarstart)/60))
 makestartimeS=$((makestarend-makestarstart))
 grep -iE --color=always 'crash|error|fail|fatal' ../make_starlte_android10.txt 2>&1 | tee ../trim_errors_starlte_android10.txt
+if compgen -G "$rom_out/starlte/lineage-1*.zip" > /dev/null; then
 telegram -f ../make_starlte_android10.txt "Build completed in "$makestartimeM" minutes or "$makestartimeS" seconds"
 telegram -f ../trim_errors_starlte_android10.txt "Trimmed errors from make_starlte_android10 (if any)"
 lunch lineage_star2lte-userdebug
@@ -54,10 +56,9 @@ cd ..
 date=`date +%d-%m-%y`
 mkdir $date/
 sleep 5
-if [ -d ~/rom/out/target/product/starlte ] && [ -d ~/rom/out/target/product/star2lte ]
-	then
-		mv ~/rom/out/target/product/star*/lineage-1*.zip ~/$date/
-		mv ~/rom/out/target/product/star*/lineage-1*.zip.md5sum ~/$date/
+if compgen -G "$rom_out/star2lte/lineage-1*.zip" > /dev/null; then
+	mv $rom_out/star*/lineage-1*.zip ~/$date/
+	mv $rom_out/star*/lineage-1*.zip.md5sum ~/$date/
 fi
 wget https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-x64
 chmod +x gdrive-linux-x64
@@ -65,3 +66,7 @@ sudo install gdrive-linux-x64 /usr/local/bin/gdrive
 gdrive upload -p 1qp133uQXFNur6tKqbs251uJ5CLCUxBgI -r $date
 telegram -MD "Uploads completed,
 [View Drive](https://drive.google.com/open?id=1qp133uQXFNur6tKqbs251uJ5CLCUxBgI)"
+else
+	telegram -f ../trim_errors_starlte_android10.txt "Build has failed after "$makestartimeM" minutes or "makestartimeS" seconds;
+	Script aborted"
+fi
