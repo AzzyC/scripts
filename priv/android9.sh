@@ -1,5 +1,6 @@
 #!/bin/bash
 rom_out=~/rom/out/target/product
+zone=$(gcloud compute instances list --filter="name="$HOSTNAME"" --format="value(zone)" --quiet)
 cd
 sudo apt update && sudo apt upgrade -y
 sudo apt install -y openjdk-8-jdk python-lunch
@@ -55,7 +56,7 @@ Trimmed errors from make_star2lte_android9 (if any)"
 cd ..
 date=`date +%d-%m-%y`
 mkdir $date/
-sleep 5
+sleep 2
 if compgen -G "$rom_out/star2lte/lineage-1*.zip" > /dev/null; then
 	mv $rom_out/star*/lineage-1*.zip ~/$date/
 	mv $rom_out/star*/lineage-1*.zip.md5sum ~/$date/
@@ -66,7 +67,11 @@ sudo install gdrive-linux-x64 /usr/local/bin/gdrive
 gdrive upload -p 1qp133uQXFNur6tKqbs251uJ5CLCUxBgI -r $date
 telegram -MD "Uploads completed,
 [View Drive](https://drive.google.com/open?id=1qp133uQXFNur6tKqbs251uJ5CLCUxBgI)"
+sleep 2
+gcloud compute instances delete $HOSTNAME --zone=$zone --delete-disks=all --quiet
 else
 	telegram -f ../trim_errors_starlte_android9.txt "Build has failed after "$makestartimeM" minutes or "makestartimeS" seconds;
 	Script aborted"
+	sleep 1200
+	gcloud compute instances delete $HOSTNAME --zone=$zone --delete-disks=all --quiet	
 fi
