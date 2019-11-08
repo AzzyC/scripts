@@ -19,7 +19,7 @@ then
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
 		echo ""
-		sudo rm -rfv ~/.local/share/Trash/
+		rm -rfv ~/.local/share/Trash/
 		echo ""
 	elif [[ $REPLY =~ ^[Nn]$ ]] 
 	then
