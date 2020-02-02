@@ -16,23 +16,20 @@ sudo curl --create-dirs -L -o /usr/local/bin/telegram -O -L https://raw.githubus
 sudo chmod a+x /usr/local/bin/telegram
 sudo chmod +x .telegram.sh
 mkdir rom/ && cd rom/
-repo init -u git://github.com/LineageOS/android.git -b lineage-17.0 --no-clone-bundle --depth=1
+repo init -u git://github.com/LineageOS/android.git -b lineage-17.1 --no-clone-bundle --depth=1
 cd .repo/
 git clone https://github.com/AzzyC/local_manifests.git -b android-10.0 --depth=1
 cd ..
-telegram -MD "Syncing [LineageOS 17](https://github.com/LineageOS/android)"
+telegram -MD "Syncing [LineageOS 17.1](https://github.com/LineageOS/android)"
 syncstart=`date +%s`
 repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags --quiet
 syncend=`date +%s`
 synctimeM=$(((syncend-syncstart)/60))
 synctimeS=$((syncend-syncstart))
-telegram -M "Sync completed in "$synctimeM" minutes or "$synctimeS" seconds, for [LineageOS 17](https://github.com/LineageOS/android)"
-git apply device/samsung/universal9810-common/patches/0001-Get-SignalStrength-From-RIL-prop.patch
-git apply device/samsung/universal9810-common/patches/0002-Calculate-gsmdBm-from-RSSI.patch
-git apply device/samsung/universal9810-common/patches/0003-colorspace-hwc-fix.patch
+telegram -M "Sync completed in "$synctimeM" minutes or "$synctimeS" seconds, for [LineageOS 17.1](https://github.com/LineageOS/android)"
 . build/envsetup.sh
 lunch lineage_starlte-userdebug
-telegram -MD "Build started for Starlte, [LineageOS 17](https://github.com/LineageOS/android)"
+telegram -MD "Build started for Starlte, [LineageOS 17.1](https://github.com/LineageOS/android)"
 makestarstart=`date +%s`
 make bacon -j$(nproc --all) 2>&1 | tee ../make_starlte_android10.txt
 makestarend=`date +%s`
