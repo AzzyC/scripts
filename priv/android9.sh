@@ -2,7 +2,7 @@
 rom_out=~/rom/out/target/product
 cd
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y openjdk-8-jdk python-lunch
+sudo apt install -y openjdk-8-jdk python-lunch lsb-core
 git config --global user.name AzzyC
 git config --global user.email azmath2000@gmail.com
 git config --global color.ui true
