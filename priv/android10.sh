@@ -35,7 +35,7 @@ make bacon -j$(nproc --all) 2>&1 | tee ../make_starlte_android10.txt
 makestarend=`date +%s`
 makestartimeM=$(((makestarend-makestarstart)/60))
 makestartimeS=$((makestarend-makestarstart))
-grep -iE 'crash|error|fail|fatal' ../make_starlte_android10.txt 2>&1 | tee ../trim_errors_starlte_android10.txt
+grep -iE 'crash|error|fail|fatal|unknown' ../make_starlte_android10.txt 2>&1 | tee ../trim_errors_starlte_android10.txt
 if compgen -G "$rom_out/starlte/lineage-1*.zip" > /dev/null; then
 telegram -f ../trim_errors_starlte_android10.txt "Build completed in "$makestartimeM" minutes or "$makestartimeS" seconds.
 Trimmed errors from make_starlte_android10 (if any)"
@@ -46,7 +46,7 @@ make bacon -j$(nproc --all) 2>&1 | tee ../make_star2lte_android10.txt
 makestar2end=`date +%s`
 makestar2timeM=$(((makestar2end-makestar2start)/60))
 makestar2timeS=$((makestar2end-makestar2start))
-grep -iE 'crash|error|fail|fatal' ../make_star2lte_android10.txt 2>&1 | tee ../trim_errors_star2lte_android10.txt
+grep -iE 'crash|error|fail|fatal|unknown' ../make_star2lte_android10.txt 2>&1 | tee ../trim_errors_star2lte_android10.txt
 telegram -f ../trim_errors_star2lte_android10.txt "Build completed in "$makestar2timeM" minutes or "$makestar2timeS" seconds.
 Trimmed errors from make_star2lte_android10 (if any)"
 cd ..
@@ -68,6 +68,7 @@ sleep 2
 else
 	telegram -f ../trim_errors_starlte_android10.txt "Build has failed after "$makestartimeM" minutes or "makestartimeS" seconds;
 	Script aborted"
+	telegram -f ../make_starlte_android10.txt "Have the full log, just in case, amigo!"
 	sleep 1200
 	. ~/scripts/delinstance.sh
 fi
