@@ -2,7 +2,23 @@
 
 vendor=ALEXNDR/images/vendor.img
 
-function modvendor {
+if [ -e G960*.zip ]; then
+device=G960
+version=$(echo G960*)
+fi
+
+if [ -e G965*.zip ]; then
+device=G965
+version=$(echo G965*)
+fi
+
+if [ -e N960*.zip ]; then
+device=N960
+version=$(echo N960*)
+fi
+
+unzip -j "$version" "$vendor" -d "$device"
+cd $device/
 mkdir vendor
 sudo mount -o loop vendor.img vendor
 cd vendor
@@ -17,26 +33,6 @@ sudo mv vk_kinibi.rc vk_kinibi.rc.bak
 cd ../../lib
 sudo mv liboemcrypto.so liboemcrypto.so.bak
 cd ../..
-sudo umount vendor 
-}
-
-if [[ -f "G960*.zip" ]]; then
-unzip -j "G960*.zip" "$vendor" -d "G960"
-cd G960/
-modvendor
-mv vendor.img G960_Vendor.img
-fi
-
-if [[ -f "G965*.zip" ]]; then
-unzip -j "G965*.zip" "$vendor" -d "G965"
-cd G965/
-modvendor
-mv vendor.img G965_Vendor.img
-fi
-
-if [[ -f "N960*.zip" ]]; then
-unzip -j "N960*.zip" "$vendor" -d "N960"
-cd N960/
-modvendor
-mv vendor.img N960_Vendor.img
-fi
+sudo umount vendor
+mv vendor.img ${device}_${version:9:4}_Vendor.img
+md5sum ${device}_${version:9:4}_Vendor.img > ${device}_${version:9:4}_Vendor.img.md5sum
