@@ -2,21 +2,7 @@
 
 vendor=ALEXNDR/images/vendor.img
 
-if [ -e G960*.zip ]; then
-device=G960
-version=$(echo G960*)
-fi
-
-if [ -e G965*.zip ]; then
-device=G965
-version=$(echo G965*)
-fi
-
-if [ -e N960*.zip ]; then
-device=N960
-version=$(echo N960*)
-fi
-
+modvendor () {
 unzip -j "$version" "$vendor" -d "$device"
 cd $device/
 mkdir vendor
@@ -34,5 +20,27 @@ cd ../../lib
 sudo mv liboemcrypto.so liboemcrypto.so.bak
 cd ../..
 sudo umount vendor
+sudo rm -rf vendor
 mv vendor.img ${device}_${version:9:4}_Vendor.img
 md5sum ${device}_${version:9:4}_Vendor.img > ${device}_${version:9:4}_Vendor.img.md5sum
+}
+
+if [ -e G960*.zip ]; then
+device=G960
+version=$(echo G960*)
+modvendor
+fi
+
+if [ -e G965*.zip ]; then
+device=G965
+version=$(echo G965*)
+modvendor
+fi
+
+if [ -e N960*.zip ]; then
+device=N960
+version=$(echo N960*)
+modvendor
+fi
+
+mv -t Vendor-NoForceEncrypt G960 G965 N960
