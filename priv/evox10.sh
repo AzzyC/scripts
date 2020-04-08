@@ -28,7 +28,7 @@ synctimeM=$(((syncend-syncstart)/60))
 synctimeS=$((syncend-syncstart))
 telegram -MD "Sync completed in "$synctimeM" minutes or "$synctimeS" seconds, for [EvolutionX 4.1](https://github.com/Evolution-X/manifest/tree/ten)"
 cd device/samsung/universal9810-common/
-sed -i '91,94d' universal9810-common.mk
+sed -i '/^SamsungD/d' universal9810-common.mk
 cd ../starlte/
 sed -i 's/lineage/aosp/g' AndroidProducts.mk
 mv lineage_starlte.mk aosp_starlte.mk

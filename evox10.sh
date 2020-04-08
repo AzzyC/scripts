@@ -19,7 +19,7 @@ git clone https://github.com/AzzyC/local_manifests.git -b android-10.0 --depth=1
 cd ..
 repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags --quiet
 cd device/samsung/universal9810-common/
-sed -i '91,94d' universal9810-common.mk
+sed -i '/^SamsungD/d' universal9810-common.mk
 cd ../starlte/
 sed -i 's/lineage/aosp/g' AndroidProducts.mk
 mv lineage_starlte.mk aosp_starlte.mk

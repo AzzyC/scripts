@@ -29,8 +29,8 @@ synctimeS=$((syncend-syncstart))
 telegram -MD "Sync completed in "$synctimeM" minutes or "$synctimeS" seconds, for [Bootleggers 5.0](https://github.com/BootleggersROM/manifest/tree/queso)"
 cd device/samsung/universal9810-common/
 rm sepolicy/private/hal_lineage_livedisplay_sysfs.te
-sed -i '88,95d' universal9810-common.mk
-sed -i '126,128d' BoardConfigCommon.mk
+sed -i '/^SamsungD/d' universal9810-common.mk
+sed -i '/^DEVICE/d' BoardConfigCommon.mk
 sed -i '1d' sepolicy/private/file.te
 sed -i '7,10d' sepolicy/private/file_contexts
 cd ../starlte/
@@ -44,6 +44,7 @@ mv lineage_star2lte.mk bootleg_star2lte.mk
 sed -i 's/lineage_/bootleg_/' bootleg_star2lte.mk
 sed -i 's/lineage/bootleggers/' bootleg_star2lte.mk
 cd ~/rom/hardware/samsung/
+sed -i '46d' Android.mk
 rm -rf hidl/touch hidl/livedisplay
 sed -i '22,24d' AdvancedDisplay/Android.mk
 cd ~/rom/
