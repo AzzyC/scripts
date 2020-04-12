@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mcfolderid=1s43Sn6h_aoWQ_T2-GpfKs8t7Dy0rMU0n
-date=`date +%d-%m-%y_%H:%M`
+date=`date -d '+1 hour' '+%d-%m-%y_%H:%M'`
 javarun='java -Xms2G -Xmx5G -jar forge-1.15.2-31.1.0.jar nogui'
 
 if [[ -e backup && -e restore ]]; then
