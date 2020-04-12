@@ -2,7 +2,7 @@
 
 mcfolderid=1s43Sn6h_aoWQ_T2-GpfKs8t7Dy0rMU0n
 date=`date +%d-%m-%y_%H:%M`
-javarun='java -Xms2G -Xmx5G -jar minecraft_server.jar nogui'
+javarun='java -Xms2G -Xmx5G -jar forge-1.15.2-31.1.0.jar nogui'
 
 if [[ -e backup && -e restore ]]; then
 echo "Both 'backup' and 'restore' file exist"
@@ -36,6 +36,7 @@ touch $date
 mv minecraft_server.zip* minecraft
 mv $date minecraft
 gdrive upload -p $mcfolderid -r minecraft
+rm -rf minecraft
 echo ""
 echo "Server backed up to GoogleDrive"
 fi
