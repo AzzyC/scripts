@@ -54,7 +54,6 @@ echo "Beginning server restore.."
 gdrive download -r $mcfolderid
 mv minecraft/minecraft/minecraft_server.zip* ~
 checksum=`head -c 64 minecraft_server.zip.sha256sum`
-rm -rf minecraft
 echo "Checking sha256sum of minecraft_server.zip .."
 if ! echo "$checksum minecraft_server.zip" | sha256sum -c --quiet "minecraft_server.zip.sha256sum"; then
 echo ""
@@ -62,9 +61,14 @@ echo "Checksum failed"
 return 1
 else
 echo "File integrity valid"
-rm minecraft_server.zip.sha256sum
 unzip minecraft_server.zip
-rm minecraft_server.zip
+if [ ! -z "$(ls minecraft/mods)" ]; then
+mv minecraft/mods/* minecraft_server/mods
+else
+echo "No new mods found to import to server"
+fi
+rm minecraft_server.zip*
+rm -rf minecraft
 cd minecraft_server
 scriptend=`date +%s`
 echo "Server restored from GoogleDrive in $((scriptend-scriptstart)) second(s)" 2>&1 | tee -a ~/timeelapsed.txt
