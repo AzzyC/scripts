@@ -5,19 +5,20 @@ date=`date -d '+1 hour' '+%d-%m-%y_%H:%M'`
 javarun='java -Xms2G -Xmx5G -jar forge-1.15.2-31.1.0.jar nogui'
 scriptstart=`date +%s`
 
+cd
+
 if [[ -e backup && -e restore ]]; then
 echo "Both 'backup' and 'restore' file exist"
 echo "Delete one and re-bash the script"
 return 1
 fi
 
-sudo apt update -y
-sudo apt install unzip zip openjdk-8-jdk-headless -y
-cd
+sudo apt update -y > /dev/null
+sudo apt install unzip zip openjdk-8-jdk-headless -y > /dev/null
 
 if [ ! -e gdrive-linux-x64 ]; then
 echo "Installing GoogleDrive"
-wget https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-x64
+wget -q https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-x64
 chmod +x gdrive-linux-x64
 sudo install gdrive-linux-x64 /usr/local/bin/gdrive
 fi
@@ -27,7 +28,7 @@ echo "'backup' file detected"
 if [ ! -d .gdrive ]; then
 echo "Not setup GoogleDrive AuthToken"
 return 1
-else
+fi
 rm backup
 echo "Beginning server backup.."
 mkdir minecraft
@@ -41,14 +42,13 @@ rm -rf minecraft
 scriptend=`date +%s`
 echo "Server backed up to GoogleDrive in $((scriptend-scriptstart)) second(s)" 2>&1 | tee -a ~/timeelapsed.txt
 fi
-fi
 
 if [ -e restore ]; then
 echo "'restore' file detected"
 if [ ! -d .gdrive ]; then
 echo "Not setup GoogleDrive AuthToken"
 return 1
-else
+fi
 rm restore
 echo "Beginning server restore.."
 gdrive download -r $mcfolderid
@@ -61,6 +61,7 @@ echo "Checksum failed"
 return 1
 else
 echo "File integrity valid"
+fi
 unzip minecraft_server.zip
 if [ ! -z "$(ls minecraft/mods)" ]; then
 mv minecraft/mods/* minecraft_server/mods
@@ -74,6 +75,4 @@ scriptend=`date +%s`
 echo "Server restored from GoogleDrive in $((scriptend-scriptstart)) second(s)" 2>&1 | tee -a ~/timeelapsed.txt
 echo "Now running server.."
 $javarun
-fi
-fi
 fi
