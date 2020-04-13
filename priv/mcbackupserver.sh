@@ -30,7 +30,7 @@ fi
 rm backup
 echo "Beginning server backup.."
 mkdir minecraft
-zip -r minecraft_server.zip minecraft_server/
+zip -r minecraft_server.zip minecraft_server/ > /dev/null
 sha256sum minecraft_server.zip > minecraft_server.zip.sha256sum
 mv minecraft_server.zip* minecraft
 mv timeelapsed.txt minecraft
@@ -59,7 +59,7 @@ return 1
 else
 echo "File integrity valid"
 fi
-unzip minecraft_server.zip
+unzip minecraft_server.zip > /dev/null
 if [ ! -z "$(ls minecraft/mods)" ]; then
 mv minecraft/mods/* minecraft_server/mods
 else
@@ -70,7 +70,7 @@ rm -rf minecraft
 scriptend=`date +%s`
 echo "Server restored from GoogleDrive in $((scriptend-scriptstart)) second(s)" 2>&1 | tee -a ~/timeelapsed.txt
 echo "Now running server.."
-wget https://raw.githubusercontent.com/AzzyC/scripts/ReAdScRiPt/priv/mcrunserver.sh
+wget -q https://raw.githubusercontent.com/AzzyC/scripts/ReAdScRiPt/priv/mcrunserver.sh
 sudo chmod +x mcrunserver.sh
 . mcrunserver.sh
 fi
