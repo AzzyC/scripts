@@ -3,6 +3,7 @@
 mcfolderid=1s43Sn6h_aoWQ_T2-GpfKs8t7Dy0rMU0n
 date=`date -d '+1 hour' '+%d-%m-%y_%H:%M'`
 javarun='java -Xms2G -Xmx5G -jar forge-1.15.2-31.1.0.jar nogui'
+scriptstart=`date +%s`
 
 if [[ -e backup && -e restore ]]; then
 echo "Both 'backup' and 'restore' file exist"
@@ -37,8 +38,8 @@ mv minecraft_server.zip* minecraft
 mv $date minecraft
 gdrive upload -p $mcfolderid -r minecraft
 rm -rf minecraft
-echo ""
-echo "Server backed up to GoogleDrive"
+scriptend=`date +%s`
+echo "Server backed up to GoogleDrive in $((scriptend-scriptstart)) second(s)" 2>&1 | tee -a ~/timeelapsed.txt
 fi
 fi
 
@@ -65,7 +66,8 @@ rm minecraft_server.zip.sha256sum
 unzip minecraft_server.zip
 rm minecraft_server.zip
 cd minecraft_server
-echo "Server restored from GoogleDrive"
+scriptend=`date +%s`
+echo "Server restored from GoogleDrive in $((scriptend-scriptstart)) second(s)" 2>&1 | tee -a ~/timeelapsed.txt
 echo "Now running server.."
 $javarun
 fi
