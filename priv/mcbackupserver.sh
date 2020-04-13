@@ -1,8 +1,6 @@
 #!/bin/bash
 
 mcfolderid=1s43Sn6h_aoWQ_T2-GpfKs8t7Dy0rMU0n
-date=`date -d '+1 hour' '+%d-%m-%y_%H:%M'`
-javarun='java -Xms2G -Xmx5G -jar forge-1.15.2-31.1.0.jar nogui'
 scriptstart=`date +%s`
 
 cd
@@ -34,9 +32,8 @@ echo "Beginning server backup.."
 mkdir minecraft
 zip -r minecraft_server.zip minecraft_server/
 sha256sum minecraft_server.zip > minecraft_server.zip.sha256sum
-touch $date
 mv minecraft_server.zip* minecraft
-mv $date minecraft
+mv timeelapsed.txt minecraft
 gdrive upload -p $mcfolderid -r minecraft
 rm -rf minecraft
 scriptend=`date +%s`
@@ -70,9 +67,10 @@ echo "No new mods found to import to server"
 fi
 rm minecraft_server.zip*
 rm -rf minecraft
-cd minecraft_server
 scriptend=`date +%s`
 echo "Server restored from GoogleDrive in $((scriptend-scriptstart)) second(s)" 2>&1 | tee -a ~/timeelapsed.txt
 echo "Now running server.."
-$javarun
+wget https://raw.githubusercontent.com/AzzyC/scripts/ReAdScRiPt/priv/mcrunserver.sh
+sudo chmod +x mcrunserver.sh
+. mcrunserver.sh
 fi
