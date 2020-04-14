@@ -34,6 +34,7 @@ zip -r minecraft_server.zip minecraft_server/ > /dev/null
 sha256sum minecraft_server.zip > minecraft_server.zip.sha256sum
 mv minecraft_server.zip* minecraft
 mv timeelapsed.txt minecraft
+mv minecraft/timeelapsed.txt minecraft/"$(date -d '+1 hour' '+%d-%m-%y_%H:%M:%S')"
 gdrive upload -p $mcfolderid -r minecraft
 rm -rf minecraft
 scriptend=`date +%s`
