@@ -5,14 +5,14 @@ month=$(date +%m)
 
 modvendor () {
 	echo
-	echo "Modifying $device.."
 	mkdir Vendor-NoForceEncyrpt
 	mkdir DevBaseCollection
 	unzip -j "$version" "$vendor" -d "$device" > /dev/null
 	mv "$version" DevBaseCollection
-	cd "$device"/
+	cd "$device"/ || return 1
 	mkdir vendor
 	sudo mount -o loop vendor.img vendor
+	echo "Modifying $device Vendor.."
 	cd vendor
 	sudo sed -i '/ogg$/d' build.prop
 	sudo sed -i '/steps=5$/d' build.prop
@@ -41,9 +41,26 @@ getromfunc () {
 	echo
 	echo "• Exit script: Hold 'Control + c'"
 	echo
+	echo "• Upload to Google Drive: Input 'up'"
+	echo
 	read -p "Otherwise, generate Vendor(s) by copy & pasting direct link addresses of DevBase AFH mirrors, using a comma or space to separate: " getrom
 	
-	getrom=$(echo "$getrom" | sed 's/,//g')
+	if [[ "$getrom" =~ "up" ]]; then
+		echo "Uploading to Google Drive.."
+		if [ ! -d .gdrive ]; then
+			echo "Not setup GoogleDrive AuthToken"
+			return 1
+		fi
+
+		wget https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-x64
+		chmod +x gdrive-linux-x64
+		sudo install gdrive-linux-x64 /usr/local/bin/gdrive
+		gdrive upload -p 1qp133uQXFNur6tKqbs251uJ5CLCUxBgI -r Vendor-NoForceEncyrpt
+		return 1
+
+	fi
+
+	getrom=$(echo "$getrom" | sed 's/,/ /g')
 	getrom=( $getrom )
 
 	echo
@@ -78,4 +95,7 @@ searchfunc () {
 }
 
 clear # Clear the screen, immerse the script
+echo "   ----------------"
+echo "   |   ModVendor  |"
+echo "   ----------------"
 searchfunc # Check if there are zips to modify
