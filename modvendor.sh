@@ -43,7 +43,7 @@ getromfunc () {
 	echo
 	echo "• Upload to Google Drive: Input 'up'"
 	echo
-	read -p "Otherwise, generate Vendor(s) by copy & pasting direct link addresses of DevBase AFH mirrors, using a comma or space to separate: " getrom
+	read -p "Otherwise, generate Vendor(s) by copy & pasting direct link addresses of DevBase AFH mirrors, using a space to separate. Links: " getrom
 	
 	if [[ "$getrom" =~ "up" ]]; then
 		echo "Uploading to Google Drive.."
@@ -60,13 +60,26 @@ getromfunc () {
 
 	fi
 
-	getrom=$(echo "$getrom" | sed 's/,/ /g')
 	getrom=( $getrom )
 
 	echo
-	wget "${getrom[0]}"
-	wget "${getrom[1]}"
-	wget "${getrom[2]}"
+
+	if [[ "${#getrom[@]}" -eq "1" ]]; then
+		wget "${getrom[0]}"
+	fi
+	if [[ "${#getrom[@]}" -eq "2" ]]; then
+		wget "${getrom[0]}"
+		echo
+		wget "${getrom[1]}"
+	fi
+	if [[ "${#getrom[@]}" -eq "3" ]]; then
+		wget "${getrom[0]}"
+		echo
+		wget "${getrom[1]}"
+		echo
+		wget "${getrom[2]}"
+	fi
+
 	searchfunc
 }
 
