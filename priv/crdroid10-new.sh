@@ -14,6 +14,15 @@ if [[ ! -d buildenv ]]; then # Only bash this part of script once; directory use
 		return 1
 	fi
 
+	# Use CLI Google Drive to upload files
+	if [ -d .gdrive ]; then
+		sudo wget -q -nc -O /usr/local/bin/gdrive https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-x64
+		sudo chmod a+x /usr/local/bin/gdrive
+	else
+		echo "Not setup GoogleDrive AuthToken"
+		return 1
+	fi
+
 	# Skip git prompts
 	git config --global user.name AzzyC
 	git config --global user.email azmath2000@gmail.com
@@ -32,14 +41,10 @@ fi
 # Dont attempt to create 'rom' if it already exists - Reduce error noise
 if [[ ! -d rom ]]; then
 	mkdir rom && cd rom # `cd` will only run, if `mkdir` was successful - Fail-safe for low storage
-else
-	printf "\n'rom' directory already exists\n"
-fi
-
-if [[ ! -d .repo ]]; then
 	repo init -u https://github.com/crdroidandroid/android.git -b 10.0 --depth=1 --no-clone-bundle --no-tags -q
-	cd .repo/
+	cd .repo/ || return 1
 	git clone https://github.com/synt4x93/local_manifests.git -b lineage-17.1 --depth=1 -q
+	cd ~
 	touch sync # Leave breadcrumb so that `repo sync` runs; make `repo sync` modular, if need to `repo sync` again
 fi
 
