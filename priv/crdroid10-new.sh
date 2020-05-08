@@ -1,5 +1,32 @@
 #!/bin/bash
 
+# This function of statements will reconfigure the time difference before and after desired commands, to make sure that the given time is correct
+timecheck () {
+	start=( $start )
+	starthour="${start[0]}"
+	startminute="${start[1]}"
+	startsecond="${start[2]}"
+
+	end=( $end )
+	endhour="${end[0]}"
+	endminute="${end[1]}"
+	endsecond="${end[2]}"
+
+	if [[ "$((endhour-starthour))" -lt "0" ]]; then
+		endhour="$((24+endhour))"
+	fi
+
+	if [[ "$((endminute-startminute))" -lt "0" ]]; then
+		endminute="$((60+endminute))"
+		endhour="$((endhour-1))"
+	fi
+
+	if [[ "$((endsecond-startsecond))" -lt "0" ]]; then
+		endsecond="$((60+endsecond))"
+		endminute="$((endminute-1))"
+	fi
+}
+
 cd ~ # Begin script in home directory
 
 if [[ ! -d buildenv ]]; then # Only bash this part of script once; directory used as a breadcrumb
@@ -32,7 +59,7 @@ if [[ ! -d buildenv ]]; then # Only bash this part of script once; directory use
 	git clone https://github.com/akhilnarang/scripts.git build_env --depth=1 # `--depth=1` No time wasting fetching commit history
 	sudo chmod +x build_env/setup/android_build_env.sh
 	. build_env/setup/android_build_env.sh
-	sudo apt install -y openjdk-8-jdk # jdk8 required to compile Android 5.0+
+	sudo apt install -y openjdk-8-jdk lunch # jdk8 required to compile Android 5.0+
 
 	telegram "Android building environment installed"
 
@@ -48,6 +75,16 @@ if [[ ! -d rom ]]; then
 	touch sync # Leave breadcrumb so that `repo sync` runs; make `repo sync` modular, if need to `repo sync` again
 fi
 
-if [[ -e sync ]]; then
-	
+if [[ -e sync ]]; then # If need to sync again after the inital sync, could do so by creating a 'sync' breadcrumb: `touch sync`
+	rm sync
+	cd rom || return 1
+
+	start="$(date +'%-H %-M %-S')"
+	repo sync -c --force-sync -j$(nproc --all) --no-clone-bundle --no-tags --prune --q
+	end="$(date +'%-H %-M %-S')"
+
+	timecheck # Use function from first lines to make sure the time doesn't include negatives
+
+	telegram -M "***Sync Time***: ``\`$((endhour-starthour))hour(s) $((endminute-startminute))minute(s) $((endsecond-startsecond))second(s)\```"
 fi
+
