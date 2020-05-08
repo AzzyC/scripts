@@ -25,7 +25,7 @@ else
 fi
 
 if [[ -e .telegram.sh ]]; then
-	sudo wget -q -nc -O /usr/local/bin/telegram https://raw.githubusercontent.com/bluedogerino/jenkins_rom/master/telegram
+	sudo wget -q -nc -O /usr/local/bin/telegram https://raw.githubusercontent.com/fabianonline/telegram.sh/master/telegram
 	sudo chmod a+x /usr/local/bin/telegram
 	sudo chmod +x .telegram.sh
 else
