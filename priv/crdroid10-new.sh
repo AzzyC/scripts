@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# To make this script easily rewritable for various roms, differences will be stated in variables at the top of the file 
+romname=""
+rommanifest="https://github.com/crdroidandroid/android.git -b 10.0" # Format should always be <manifesturl>.git -b <branchname>
+
 # This function of statements will reconfigure the time difference before and after desired commands, to make sure that the given time is correct
 timecheck () {
 	start=( $start )
@@ -68,23 +72,29 @@ fi
 # Dont attempt to create 'rom' if it already exists - Reduce error noise
 if [[ ! -d rom ]]; then
 	mkdir rom && cd rom # `cd` will only run, if `mkdir` was successful - Fail-safe for low storage
-	repo init -u https://github.com/crdroidandroid/android.git -b 10.0 --depth=1 --no-clone-bundle --no-tags -q
+	repo init -u "$rommanifest" --depth=1 --no-clone-bundle --no-tags -q
 	cd .repo/ || return 1
 	git clone https://github.com/synt4x93/local_manifests.git -b lineage-17.1 --depth=1 -q
 	cd ~
-	touch sync # Leave breadcrumb so that `repo sync` runs; make `repo sync` modular, if need to `repo sync` again
+	touch sync
 fi
 
 if [[ -e sync ]]; then # If need to sync again after the inital sync, could do so by creating a 'sync' breadcrumb: `touch sync`
 	rm sync
-	cd rom || return 1
+	cd ~/rom || return 1
 
 	start="$(date +'%-H %-M %-S')"
 	repo sync -c --force-sync -j$(nproc --all) --no-clone-bundle --no-tags --prune --q
 	end="$(date +'%-H %-M %-S')"
 
 	timecheck # Use function from first lines to make sure the time doesn't include negatives
-
 	telegram -M "***Sync Time***: ``\`$((endhour-starthour))hour(s) $((endminute-startminute))minute(s) $((endsecond-startsecond))second(s)\```"
+
+	cd ~
+	touch build
 fi
 
+if [[ -e build ]]; then # Again, to keep it modular when a 'build' breadcrumb is spotted it will begin to `make` again: `touch build`
+	rm build
+	cd ~/rom || return 1
+fi
