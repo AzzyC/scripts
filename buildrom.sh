@@ -1,32 +1,58 @@
 #!/bin/bash
 
-if [[ "$romname" ==  ]]; then
-	#statements
-fi
+lineage10 () {
+	romname="lineage-17.1"
+	rommanifest=""
 
-if [[ -z "$romname" ]]; then
-	PS3='Please enter your number choice: '
-	roms=("lineage-17.1" "crDroidAndroid-10.0" "Quit")
-	select romname in "${roms[@]}"
+}
+
+crdroid10 () {
+	romname="crDroidAndroid-10.0"
+	rommanifest=""
+
+}
+
+if [[ "$1" != "quiet" ]]; then
+
+	if [[ "$1" =~ ^(lineage10|crdroid10)$ ]]
+	then
+		"$1" # Use the variable to call for the function, rather than specifying each time
+	fi
+
+	while [[ ! "$changerom" =~ ^(Y|y|N|n)$ ]]
 	do
-	    case $romname in
-	        "lineage-17.1")
-	        	#command
-	            ;;
-	        "crDroidAndroid-10.0")
-				#coomand
-	            ;;
-	        "Quit")
-	            break
-	            ;;
-	        *)
-				printf "You did not choose any of the options: '$REPLY'. Try again:"
-				;;
-	    esac
+		printf '%s\n' "Selected ROM: $romname" "Do you want to change? (y/N)" ""
+		read -n 2 -r -t 20 changerom
 	done
-fi
 
-printf "Chosen ROM: $romname"
+	if [[ "$changerom" =~ ^[Yy]$ ]]; then
+		unset changerom
+		unset romname
+	fi	
+
+	if [[ -z "$romname" ]]; then
+		PS3='Please enter your number choice: '
+		roms=("LineageOS (10)" "crDroid (10)" "Quit")
+		select rom in "${roms[@]}"
+		do
+		    case $rom in
+		        "LineageOS (10)")
+					lineage10
+		            ;;
+		        "crDroid (10)")
+					crdroid10
+		            ;;
+		        "Quit")
+		            break
+		            ;;
+		        *)
+					printf '%s\n' "" "You did not choose any of the options: '$REPLY'. Try again:" ""
+					;;
+		    esac
+		done
+	fi
+
+fi
 
 # This function of statements will reconfigure the time difference before and after desired commands, to make sure that the given time is correct
 timecheck () {
@@ -55,9 +81,7 @@ timecheck () {
 	fi
 }
 
-cd ~ # Begin script in home directory
-
-buildenv () {
+env () {
 	if [[ ! -d buildenv ]]; then # Only bash this part of script once; directory used as a breadcrumb
 
 		# Use HTTP Telegram to notify script progress AFK
@@ -94,34 +118,40 @@ buildenv () {
 }
 
 # Dont attempt to create '"$romname"' if it already exists - Reduce error noise
-if [[ ! -d "$romname" ]]; then
-	mkdir "$romname"
-else
-	cd "$romname"
-	repo init -u "$rommanifest" --depth=1 --no-clone-bundle --no-tags -q
-	cd .repo || return 1
-	git clone https://github.com/synt4x93/local_manifests.git -b lineage-17.1 --depth=1 -q
-	cd ~
-	touch sync
-fi
-
-if [[ -e sync ]]; then # If need to sync again after the inital sync, could do so by creating a 'sync' breadcrumb: `touch sync`
-	rm sync
-	cd ~/"$romname" || return 1
-
-	start="$(date +'%-H %-M %-S')"
-	repo sync -c --force-sync -j$(nproc --all) --no-clone-bundle --no-tags --prune --q
-	end="$(date +'%-H %-M %-S')"
-
-	timecheck # Use function from first lines to make sure the time doesn't include negatives
-	telegram -M "***Sync Time***: ``\`$((endhour-starthour))hour(s) $((endminute-startminute))minute(s) $((endsecond-startsecond))second(s)\```"
+init () {
 
 	cd ~
-	touch build
-fi
 
-if [[ -e build ]]; then # Again, to keep it modular when a 'build' breadcrumb is spotted it will begin to `make` again: `touch build`
-	rm build
-	cd ~/"$romname" || return 1
+	if [[ ! -d "$romname" ]]; then
+		mkdir "$romname"
+	else
+		cd "$romname"
+		repo init -u "$rommanifest" --depth=1 --no-clone-bundle --no-tags -q
+		cd .repo || return
+		git clone https://github.com/synt4x93/local_manifests.git -b lineage-17.1 --depth=1 -q
+	fi
+}
 
-fi
+sync () {
+	cd ~/"$romname" || return
+
+	if [[ -d .repo ]]; then
+
+		start="$(date +'%-H %-M %-S')"
+		repo sync -c --force-sync -j$(nproc --all) --no-clone-bundle --no-tags --prune --q
+		end="$(date +'%-H %-M %-S')"
+
+		timecheck # Use `timecheck` function to make sure the time is correctly formatted
+		telegram -M "***Sync Time***: ``\`$((endhour-starthour))hour(s) $((endminute-startminute))minute(s) $((endsecond-startsecond))second(s)\```"
+	fi
+}
+
+build () {
+	cd ~/"$romname" || return
+
+	if [[ -d .repo ]]; then
+		#command
+	fi
+}
+
+#printf '%s\n' "" # Temp Comment: Copy & Paste 
