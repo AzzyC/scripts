@@ -3,16 +3,36 @@
 lineage10 () {
 	romid="lineage10"
 	romname="lineage-17.1"
-	rommanifest=""
-
+	rommanifest="https://github.com/LineageOS/android.git -b lineage-17.1"
+	lunchname="lineage"
 }
 
 crdroid10 () {
 	romid="crdroid10"
 	romname="crDroidAndroid-10.0"
-	rommanifest=""
-
+	rommanifest="https://github.com/crdroidandroid/android.git -b 10.0"
+	lunchname="lineage"
 }
+
+if [[ ! -z "$2"  ]]; then
+
+	if [[ "$2" = "crown" ]]; then
+		crown="y"
+	fi
+
+	if [[ "$2" = "star" ]]; then
+		star="y"
+	fi
+
+	if [[ "$2" = "star2" ]]; then
+		star2="y"
+	fi
+
+else
+	star="y"
+	star2="y"
+	crown="y"
+fi
 
 if [[ "$1" != "quiet" ]]; then
 
@@ -64,6 +84,8 @@ if [[ "$1" != "quiet" ]]; then
 
 	printf '%s\n' "" "Finalised ROM: $romname"
 
+	totalbuild
+
 fi
 
 # This function of statements will reconfigure the time difference before and after desired commands, to make sure that the given time is correct
@@ -89,6 +111,8 @@ timecheck () {
 		endsecond="$((60+endsecond))"
 		endminute="$((endminute-1))"
 	fi
+
+	statetime="$((endhour-starthour))hour(s) $((endminute-startminute))minute(s) $((endsecond-startsecond))second(s)"
 }
 
 buildenv () {
@@ -154,25 +178,86 @@ romsync () {
 
 		start=( "$(date +'%-H %-M %-S')" )
 		repo sync -c --force-sync -j$(nproc --all) --no-clone-bundle --no-tags --prune --q
-		start=( "$(date +'%-H %-M %-S')" )
+		end=( "$(date +'%-H %-M %-S')" )
 
 		timecheck # Use `timecheck` function to make sure the time is correctly formatted
 
-		printf '%s\n' "" "Sync Time: $((endhour-starthour))hour(s) $((endminute-startminute))minute(s) $((endsecond-startsecond))second(s)" ""
-		telegram -M "***Sync Time***: ``\`$((endhour-starthour))hour(s) $((endminute-startminute))minute(s) $((endsecond-startsecond))second(s)\```"
+		printf '%s\n' "" "Sync Time: $statetime " ""
+		telegram -M "***Sync Time***: ``\`$statetime\```"
 
 	fi
 }
 
-#printf '%s\n' "" # Temp Comment: Copy & Paste 
+configtree () {
+	"$romid"
+}
 
 build () {
-	"$romid"
+	cd ~/"$romname" || return
+	. build/envsetup.sh
+
+	if [[ "$star" = "y" ]]; then
+		lunch "$lunchname"_starlte-userdebug
+
+		start=( "$(date +'%-H %-M %-S')" )
+		make bacon -j$(nproc --all) 2>&1 | tee ~/make_starlte.txt
+		end=( "$(date +'%-H %-M %-S')" )
+
+		awk '/FAILED:/,EOF' ~/make_starlte.txt ~/fail_starlte.txt
+
+		if [[ -e ~/"$romname"/out/target/product/starlte/"$romname"*.zip ]]; then
+			return
+			telegram ~/fail_starlte.txt "Uh oh.. build failed after $statetime"
+			printf '%s\n' "" "" ""
+			cat ~/fail_starlte.txt
+			printf '%s\n' "" "Build failed after $statetime" "See ~/fail_starlte.txt for fail log" ""
+		fi
+
+	fi
+
+	if [[ "$star2" = "y" ]]; then
+		lunch "$lunchname"_star2lte-userdebug
+
+		start=( "$(date +'%-H %-M %-S')" )
+		make bacon -j$(nproc --all) 2>&1 | tee ~/make_star2lte.txt
+		end=( "$(date +'%-H %-M %-S')" )
+
+		awk '/FAILED:/,EOF' ~/make_star2lte.txt ~/fail_star2lte.txt
+
+		if [[ -e ~/"$romname"/out/target/product/star2lte/"$romname"*.zip ]]; then
+			return
+			telegram ~/fail_star2lte.txt "Uh oh.. build failed after $statetime"
+			printf '%s\n' "" "" ""
+			cat ~/fail_star2lte.txt
+			printf '%s\n' "" "Build failed after $statetime" "See ~/fail_star2lte.txt for fail log" ""
+		fi
+
+	fi
+
+	if [[ "$crown" = "y" ]]; then
+		lunch "$lunchname"_crownlte-userdebug
+
+		start=( "$(date +'%-H %-M %-S')" )
+		make bacon -j$(nproc --all) 2>&1 | tee ~/make_crownlte.txt
+		end=( "$(date +'%-H %-M %-S')" )
+
+		awk '/FAILED:/,EOF' ~/make_crownlte.txt ~/fail_crownlte.txt
+
+		if [[ -e ~/"$romname"/out/target/product/crownlte/"$romname"*.zip ]]; then
+			return
+			telegram ~/fail_crownlte.txt "Uh oh.. build failed after $statetime"
+			printf '%s\n' "" "" ""
+			cat ~/fail_crownlte.txt
+			printf '%s\n' "" "Build failed after $statetime" "See ~/fail_crownlte.txt for fail log" ""
+		fi
+
+	fi
 }
 
 totalbuild () {
 	buildenv
 	init
 	romsync
-	"$romid"
+	configtree
+	build
 }
