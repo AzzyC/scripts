@@ -130,29 +130,7 @@ fi
 
 # This function of statements will reconfigure the time difference before and after desired commands, to make sure that the time displayed is correct
 timecheck () {
-	starthour="${start[0]}"
-	startminute="${start[1]}"
-	startsecond="${start[2]}"
-
-	endhour="${end[0]}"
-	endminute="${end[1]}"
-	endsecond="${end[2]}"
-
-	if [[ "$((endhour-starthour))" -lt "0" ]]; then
-		endhour="$((24+endhour))"
-	fi
-
-	if [[ "$((endminute-startminute))" -lt "0" ]]; then
-		endminute="$((60+endminute))"
-		endhour="$((endhour-1))"
-	fi
-
-	if [[ "$((endsecond-startsecond))" -lt "0" ]]; then
-		endsecond="$((60+endsecond))"
-		endminute="$((endminute-1))"
-	fi
-
-	statetime="$(printf '%02dh:%02dm:%02ds' $((endhour-starthour)) $((endminute-startminute)) $((endsecond-startsecond)))"
+	statetime="$(printf '%02dh:%02dm:%02ds' $(( (end-start) / 3600 )) $(( ( (end-start) % 3600) / 60 )) $(( (end-start) % 60 )) )"
 }
 
 buildenv () {
@@ -215,9 +193,9 @@ romsync () {
 
 	if [[ -d .repo ]]; then
 
-		start=( "$(date +'%-H %-M %-S')" )
+		start="$(date +%s)"
 		repo sync -c --force-sync -j$(nproc --all) --no-clone-bundle --no-tags --prune --q
-		end=( "$(date +'%-H %-M %-S')" )
+		end="$(date +%s)"
 
 		timecheck # Use `timecheck` function to make sure the time is correctly formatted
 
@@ -238,9 +216,9 @@ build () {
 	if [[ "${devices[@]}" =~ "starlte" ]]; then
 		lunch "$lunchname"_starlte-userdebug
 
-		start=( "$(date +'%-H %-M %-S')" )
+		start="$(date +%s)"
 		make bacon -j$(nproc --all) 2>&1 | tee ~/make_starlte.txt
-		end=( "$(date +'%-H %-M %-S')" )
+		end="$(date +%s)"
 
 		awk '/FAILED:/,EOF' ~/make_starlte.txt ~/fail_starlte.txt
 
@@ -259,9 +237,9 @@ build () {
 	if [[ "${devices[@]}" =~ "star2lte" ]]; then
 		lunch "$lunchname"_star2lte-userdebug
 
-		start=( "$(date +'%-H %-M %-S')" )
+		start="$(date +%s)"
 		make bacon -j$(nproc --all) 2>&1 | tee ~/make_star2lte.txt
-		end=( "$(date +'%-H %-M %-S')" )
+		end="$(date +%s)"
 
 		awk '/FAILED:/,EOF' ~/make_star2lte.txt ~/fail_star2lte.txt
 
@@ -280,9 +258,9 @@ build () {
 	if [[ "${devices[@]}" =~ "crownlte" ]]; then
 		lunch "$lunchname"_crownlte-userdebug
 
-		start=( "$(date +'%-H %-M %-S')" )
+		start="$(date +%s)"
 		make bacon -j$(nproc --all) 2>&1 | tee ~/make_crownlte.txt
-		end=( "$(date +'%-H %-M %-S')" )
+		end="$(date +%s)"
 
 		awk '/FAILED:/,EOF' ~/make_crownlte.txt ~/fail_crownlte.txt
 
