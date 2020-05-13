@@ -14,31 +14,29 @@ crdroid10 () {
 	lunchname="lineage"
 }
 
-if [[ ! -z "$2"  ]]; then
-
-	if [[ "$2" = "crown" ]]; then
-		crown="y"
-	fi
-
-	if [[ "$2" = "star" ]]; then
-		star="y"
-	fi
-
-	if [[ "$2" = "star2" ]]; then
-		star2="y"
-	fi
-
-else
-	star="y"
-	star2="y"
-	crown="y"
-fi
-
 if [[ "$1" != "quiet" ]]; then
 
 	if [[ "$1" =~ ^(lineage10|crdroid10)$ ]]
 	then
 		"$1" # Use the variable to call for the function, rather than specifying each time
+	fi
+
+	if [[ ! -z "$2" ]]; then
+		if [[ "$@" =~ "star" ]]; then
+			star="y"
+		fi
+
+		if [[ "$@" =~ "star2" ]]; then
+			star2="y"
+		fi
+
+		if [[ "$@" =~ "crown" ]]; then
+			crown="y"
+		fi
+	else
+		star="y"
+		star2="y"
+		crown="y"
 	fi
 
 	if [[ ! -z "$romname" ]]; then
@@ -88,7 +86,7 @@ if [[ "$1" != "quiet" ]]; then
 
 fi
 
-# This function of statements will reconfigure the time difference before and after desired commands, to make sure that the given time is correct
+# This function of statements will reconfigure the time difference before and after desired commands, to make sure that the time displayed is correct
 timecheck () {
 	starthour="${start[0]}"
 	startminute="${start[1]}"
@@ -112,7 +110,7 @@ timecheck () {
 		endminute="$((endminute-1))"
 	fi
 
-	statetime="$((endhour-starthour))hour(s) $((endminute-startminute))minute(s) $((endsecond-startsecond))second(s)"
+	statetime="$(printf '%02dh:%02dm:%02ds' $((endhour-starthour)) $((endminute-startminute)) $((endsecond-startsecond)))"
 }
 
 buildenv () {
@@ -205,6 +203,8 @@ build () {
 
 		awk '/FAILED:/,EOF' ~/make_starlte.txt ~/fail_starlte.txt
 
+		timecheck
+
 		if [[ -e ~/"$romname"/out/target/product/starlte/"$romname"*.zip ]]; then
 			return
 			telegram ~/fail_starlte.txt "Uh oh.. build failed after $statetime"
@@ -224,6 +224,8 @@ build () {
 
 		awk '/FAILED:/,EOF' ~/make_star2lte.txt ~/fail_star2lte.txt
 
+		timecheck
+
 		if [[ -e ~/"$romname"/out/target/product/star2lte/"$romname"*.zip ]]; then
 			return
 			telegram ~/fail_star2lte.txt "Uh oh.. build failed after $statetime"
@@ -242,6 +244,8 @@ build () {
 		end=( "$(date +'%-H %-M %-S')" )
 
 		awk '/FAILED:/,EOF' ~/make_crownlte.txt ~/fail_crownlte.txt
+
+		timecheck
 
 		if [[ -e ~/"$romname"/out/target/product/crownlte/"$romname"*.zip ]]; then
 			return
