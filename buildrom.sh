@@ -14,6 +14,24 @@ crdroid10 () {
 	lunchname="lineage"
 }
 
+filterdevicearray () {
+	if [[ "${readdevice[@]}" =~ "starlte" ]]; then
+		devices+=('starlte')
+	fi
+
+	if [[ "${readdevice[@]}" =~ "star2lte" ]]; then
+		devices+=('star2lte')
+	fi
+
+	if [[ "${readdevice[@]}" =~ "crownlte" ]]; then
+		devices+=('crownlte')
+	fi
+}
+
+unset romname
+unset devices
+unset readdevice
+
 if [[ "$1" != "quiet" ]]; then
 
 	if [[ "$1" =~ ^(lineage10|crdroid10)$ ]]
@@ -21,42 +39,52 @@ if [[ "$1" != "quiet" ]]; then
 		"$1" # Use the variable to call for the function, rather than specifying each time
 	fi
 
-	if [[ "$2" =~ ^(starlte|star2lte|crownlte)$ ]]; then
+	if [[ ! -z "$2" ]]; then
 
-		if [[ "$@" =~ "starlte" ]]; then
-			devices+=('starlte')
-		fi
+		if [[ "$@" =~ "starlte" ]] || [[ "$@" =~ "star2lte" ]] || [[ "$@" =~ "crownlte" ]]; then
 
-		if [[ "$@" =~ "star2lte" ]]; then
-			devices+=('star2lte')
-		fi
+			if [[ "$@" =~ "starlte" ]]; then
+				devices+=('starlte')
+			fi
 
-		if [[ "$@" =~ "crownlte" ]]; then
-			devices+=('crownlte')
-		fi
+			if [[ "$@" =~ "star2lte" ]]; then
+				devices+=('star2lte')
+			fi
 
-		if [[ ! "$@" =~ "starlte" ]] && [[ ! "$@" =~ "star2lte" ]] && [[ ! "$@" =~ "crownlte" ]]; then
-			printf '%s\n' "" "Typo made initially stating a devices name. Try again:" "Which device(s) do you want to build the $romname for? (starlte/star2lte/crownlte)"
-			printf "Device(s): "
-			read -r -a devices
+			if [[ "$@" =~ "crownlte" ]]; then
+				devices+=('crownlte')
+			fi
+		else
+			while [[ ! "${readdevice[@]}" =~ "starlte" ]] && [[ ! "${readdevice[@]}" =~ "star2lte" ]] && [[ ! "${readdevice[@]}" =~ "crownlte" ]]
+			do
+				printf '%s\n' "" "Typo made stating a device name. Try again:" "" "Which device(s) do you want to build the $romname for? (starlte/star2lte/crownlte)"
+				printf "Device(s): "
+				read -r -a readdevice
+			done
+
+			filterdevicearray
 		fi
 	fi
 
 	if [[ ! -z "$romname" ]] && [[ ! -z "$devices" ]]; then
 
-		while [[ ! "$changesetup" =~ ^(Y|y|N|n)$ ]]
-		do
-			printf '%s\n' "" "Selected ROM: $romname" "" "Selected Device(s):" "${devices[@]}"
-			printf "Do you want to change? (y/N): "
-			read -n 2 -r changesetup
-			printf '%s\n' ""
-		done
+		if [[ ! "$@" =~ "-y" ]]; then
 
-		if [[ "$changesetup" =~ ^[Yy]$ ]]; then
-			unset romname
-			unset devices
+			while [[ ! "$changesetup" =~ ^(Y|y|N|n)$ ]]
+			do
+				printf '%s\n' "" "Selected ROM: $romname" "" "Selected Device(s): ${devices[0]} ${devices[1]} ${devices[2]}" ""
+				printf "Would you like to change any of the setup? (y/N): "
+				read -n 2 -r changesetup
+				printf '%s\n' ""
+			done
+
+			if [[ "$changesetup" =~ ^[Yy]$ ]]; then
+				unset romname
+				unset devices
+				unset readdevice
+			fi
+			unset changesetup
 		fi
-		unset changesetup
 	fi
 
 	if [[ ! -n "$romname" ]]; then
@@ -85,14 +113,16 @@ if [[ "$1" != "quiet" ]]; then
 		unset REPLY
 	fi
 
-	while [[ ! "${devices[@]}" =~ "starlte" ]] && [[ ! "${devices[@]}" =~ "star2lte" ]] && [[ ! "${devices[@]}" =~ "crownlte" ]]
+	while [[ ! "${readdevice[@]}" =~ "starlte" ]] && [[ ! "${readdevice[@]}" =~ "star2lte" ]] && [[ ! "${readdevice[@]}" =~ "crownlte" ]]
 	do
 		printf '%s\n' "" "Which device(s) do you want to build the $romname for? (starlte/star2lte/crownlte)"
 		printf "Device(s): "
-		read -r -a devices
+		read -r -a readdevice
 	done
 
-	printf '%s\n' "" "Finalised Setup: $romname for" "${devices[@]}" ""
+	filterdevicearray
+
+	printf '%s\n' "" "Final setup: $romname for ${devices[0]} ${devices[1]} ${devices[2]}" ""
 
 	totalbuild
 
