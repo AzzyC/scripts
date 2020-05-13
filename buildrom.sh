@@ -21,37 +21,42 @@ if [[ "$1" != "quiet" ]]; then
 		"$1" # Use the variable to call for the function, rather than specifying each time
 	fi
 
-	if [[ ! -z "$2" ]]; then
-		if [[ "$@" =~ "star" ]]; then
-			star="y"
+	if [[ "$2" =~ ^(starlte|star2lte|crownlte)$ ]]; then
+
+		if [[ "$@" =~ "starlte" ]]; then
+			devices+=('starlte')
 		fi
 
-		if [[ "$@" =~ "star2" ]]; then
-			star2="y"
+		if [[ "$@" =~ "star2lte" ]]; then
+			devices+=('star2lte')
 		fi
 
-		if [[ "$@" =~ "crown" ]]; then
-			crown="y"
+		if [[ "$@" =~ "crownlte" ]]; then
+			devices+=('crownlte')
 		fi
-	else
-		star="y"
-		star2="y"
-		crown="y"
+
+		if [[ ! "$@" =~ "starlte" ]] && [[ ! "$@" =~ "star2lte" ]] && [[ ! "$@" =~ "crownlte" ]]; then
+			printf '%s\n' "" "Typo made initially stating a devices name. Try again:" "Which device(s) do you want to build the $romname for? (starlte/star2lte/crownlte)"
+			printf "Device(s): "
+			read -r -a devices
+		fi
 	fi
 
-	if [[ ! -z "$romname" ]]; then
+	if [[ ! -z "$romname" ]] && [[ ! -z "$devices" ]]; then
 
-		while [[ ! "$changerom" =~ ^(Y|y|N|n)$ ]]
+		while [[ ! "$changesetup" =~ ^(Y|y|N|n)$ ]]
 		do
-			printf '%s\n' "" "Selected ROM: $romname" "Do you want to change? (y/N)" ""
-			read -n 2 -r changerom
+			printf '%s\n' "" "Selected ROM: $romname" "" "Selected Device(s):" "${devices[@]}"
+			printf "Do you want to change? (y/N): "
+			read -n 2 -r changesetup
 			printf '%s\n' ""
 		done
 
-		if [[ "$changerom" =~ ^[Yy]$ ]]; then
+		if [[ "$changesetup" =~ ^[Yy]$ ]]; then
 			unset romname
+			unset devices
 		fi
-		unset changerom
+		unset changesetup
 	fi
 
 	if [[ ! -n "$romname" ]]; then
@@ -80,7 +85,14 @@ if [[ "$1" != "quiet" ]]; then
 		unset REPLY
 	fi
 
-	printf '%s\n' "" "Finalised ROM: $romname"
+	while [[ ! "${devices[@]}" =~ "starlte" ]] && [[ ! "${devices[@]}" =~ "star2lte" ]] && [[ ! "${devices[@]}" =~ "crownlte" ]]
+	do
+		printf '%s\n' "" "Which device(s) do you want to build the $romname for? (starlte/star2lte/crownlte)"
+		printf "Device(s): "
+		read -r -a devices
+	done
+
+	printf '%s\n' "" "Finalised Setup: $romname for" "${devices[@]}" ""
 
 	totalbuild
 
@@ -146,7 +158,6 @@ buildenv () {
 	telegram "Android building environment established"
 }
 
-# Dont attempt to create '"$romname"' if it already exists - Reduce error noise
 init () {
 
 	cd ~
@@ -194,7 +205,7 @@ build () {
 	cd ~/"$romname" || return
 	. build/envsetup.sh
 
-	if [[ "$star" = "y" ]]; then
+	if [[ "${devices[@]}" =~ "starlte" ]]; then
 		lunch "$lunchname"_starlte-userdebug
 
 		start=( "$(date +'%-H %-M %-S')" )
@@ -215,7 +226,7 @@ build () {
 
 	fi
 
-	if [[ "$star2" = "y" ]]; then
+	if [[ "${devices[@]}" =~ "star2lte" ]]; then
 		lunch "$lunchname"_star2lte-userdebug
 
 		start=( "$(date +'%-H %-M %-S')" )
@@ -236,7 +247,7 @@ build () {
 
 	fi
 
-	if [[ "$crown" = "y" ]]; then
+	if [[ "${devices[@]}" =~ "crownlte" ]]; then
 		lunch "$lunchname"_crownlte-userdebug
 
 		start=( "$(date +'%-H %-M %-S')" )
