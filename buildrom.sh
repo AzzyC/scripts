@@ -14,6 +14,7 @@ crdroid10 () {
 	lunchname="lineage"
 }
 
+# Function supports filtering Users' input for words that dont resemble device names
 filterdevicearray () {
 	if [[ "${readdevice[@]}" =~ "starlte" ]]; then
 		devices+=('starlte')
@@ -28,21 +29,24 @@ filterdevicearray () {
 	fi
 }
 
+# If User sources script instead of executing, these variables turn global and could still have value. Unset to some parts of the script being skipped over
 unset romname
 unset devices
 unset readdevice
 
+# If script is sourced, can use 'quiet' flag to only pull functions from script without prompts. Flag futile if script executed
 if [[ "$1" != "quiet" ]]; then
 
-	if [[ "$1" =~ ^(lineage10|crdroid10)$ ]]
+	if [[ "$1" =~ ^(lineage10|crdroid10)$ ]] # Can only choose one ROM, so pipe in brackets to seperate different ROM options
 	then
-		"$1" # Use the variable to call for the function, rather than specifying each time
+		"$1" # Use the postional parameter to call for the corresponding ROM function, saves condition flooding
 	fi
 
-	if [[ ! -z "$2" ]]; then
+	if [[ ! -z "$2" ]]; then # First device name should be stated from second parameter
 
 		if [[ "$@" =~ "starlte" ]] || [[ "$@" =~ "star2lte" ]] || [[ "$@" =~ "crownlte" ]]; then
 
+			# If postional array contains device names, transport each stated device into the 'devices' array. To identify which devices to build
 			if [[ "$@" =~ "starlte" ]]; then
 				devices+=('starlte')
 			fi
@@ -68,11 +72,12 @@ if [[ "$1" != "quiet" ]]; then
 
 	if [[ ! -z "$romname" ]] && [[ ! -z "$devices" ]]; then
 
+		# Stating '-y' in command-line can skip prompt, if certain with the ROM and devices stated
 		if [[ ! "$@" =~ "-y" ]]; then
 
 			while [[ ! "$changesetup" =~ ^(Y|y|N|n)$ ]]
 			do
-				printf '%s\n' "" "Selected ROM: $romname" "" "Selected Device(s): ${devices[0]} ${devices[1]} ${devices[2]}" ""
+				printf '%s\n' "" "Selected ROM: $romname" "" "Selected Device(s): ${devices[0]} ${devices[1]} ${devices[2]}"
 				printf "Would you like to change any of the setup? (y/N): "
 				read -n 2 -r changesetup
 				printf '%s\n' ""
@@ -87,7 +92,7 @@ if [[ "$1" != "quiet" ]]; then
 		fi
 	fi
 
-	if [[ ! -n "$romname" ]]; then
+	if [[ ! -n "$romname" ]]; then # If no stated ROM in command-line OR changed setup, then menu
 		PS3='Please enter your number choice: '
 		roms=("LineageOS (10)" "crDroid (10)" "Quit")
 		select rom in "${roms[@]}"
@@ -113,6 +118,7 @@ if [[ "$1" != "quiet" ]]; then
 		unset REPLY
 	fi
 
+	# If no stated devices in command-line OR changed setup, this final loop to state devices 
 	while [[ ! "${readdevice[@]}" =~ "starlte" ]] && [[ ! "${readdevice[@]}" =~ "star2lte" ]] && [[ ! "${readdevice[@]}" =~ "crownlte" ]]
 	do
 		printf '%s\n' "" "Which device(s) do you want to build the $romname for? (starlte/star2lte/crownlte)"
@@ -128,7 +134,7 @@ if [[ "$1" != "quiet" ]]; then
 
 fi
 
-# This function of statements will reconfigure the time difference before and after desired commands, to make sure that the time displayed is correct
+# Calculate and print the accurate time for commands
 timecheck () {
 	statetime="$(printf '%02dh:%02dm:%02ds' $(( (end-start) / 3600 )) $(( ( (end-start) % 3600) / 60 )) $(( (end-start) % 60 )) )"
 }
@@ -157,7 +163,7 @@ buildenv () {
 	git config --global color.ui true
 
 	# Install Android building environment packages
-	git clone https://github.com/akhilnarang/scripts.git build_env --depth=1 # `--depth=1` No time wasting fetching commit history
+	git clone https://github.com/akhilnarang/scripts.git build_env --depth=1
 	sudo chmod +x build_env/setup/android_build_env.sh
 	. build_env/setup/android_build_env.sh
 	sudo apt install -y openjdk-8-jdk lunch # jdk8 required to compile Android 5.0+
@@ -174,17 +180,13 @@ init () {
 		mkdir "$romname"
 	else
 
-	if [[ -d "$romname" ]]; then
 	cd "$romname"
-	rm -rf .repo
 	repo init -u "$rommanifest" --depth=1 --no-clone-bundle --no-tags -q
 	cd .repo || return
 	git clone https://github.com/synt4x93/local_manifests.git -b lineage-17.1 --depth=1 -q
 
 	printf '%s\n' "" "$romname manifest repo initialised at $(date +%T)" ""
 	telegram "$romname manifest repo initialised"
-
-	fi
 
 }
 
@@ -197,7 +199,7 @@ romsync () {
 		repo sync -c --force-sync -j$(nproc --all) --no-clone-bundle --no-tags --prune --q
 		end="$(date +%s)"
 
-		timecheck # Use `timecheck` function to make sure the time is correctly formatted
+		timecheck
 
 		printf '%s\n' "" "Sync Time: $statetime " ""
 		telegram -M "***Sync Time***: ``\`$statetime\```"
@@ -213,6 +215,7 @@ build () {
 	cd ~/"$romname" || return
 	. build/envsetup.sh
 
+	# Now using aforementioned 'devices' array
 	if [[ "${devices[@]}" =~ "starlte" ]]; then
 		lunch "$lunchname"_starlte-userdebug
 
@@ -220,7 +223,7 @@ build () {
 		make bacon -j$(nproc --all) 2>&1 | tee ~/make_starlte.txt
 		end="$(date +%s)"
 
-		awk '/FAILED:/,EOF' ~/make_starlte.txt ~/fail_starlte.txt
+		awk '/FAILED:/,EOF' ~/make_starlte.txt ~/fail_starlte.txt # Trim make log down to just show fail
 
 		timecheck
 
@@ -277,6 +280,7 @@ build () {
 	fi
 }
 
+# Function which brings all modular functions together, to make complete ROM
 totalbuild () {
 	buildenv
 	init
