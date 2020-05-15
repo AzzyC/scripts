@@ -1,19 +1,27 @@
 #!/bin/bash
 
-vendor="ALEXNDR/images/vendor.img"
-month="$(date +%m)"
-
 modvendor () {
-	unzip -j "$version" "$vendor" -d "$device" > /dev/null
+	printf '%s\n' "" "Found device zip: $device"
+
+	printf '%s\n' "" "Extracting Vendor from zip.."
+	unzip -j "$version" "ALEXNDR/images/vendor.img" -d "$device" > /dev/null
 	mv "$version" DevBaseCollection
-	cd "$device"/ || printf "Running low on disk space?" && return
+
+	if [[ -d "$device" ]]; then
+		cd "$device"
+	else
+		printf "Running low on disk space?"
+		return 2>/dev/null || exit
+	fi
+
 	mkdir vendor
 	sudo mount -o loop vendor.img vendor
-	cd vendor || printf '%s\n' "Script does not have executable permission" "" "Copy & Paste: sudo chmod +x modvendor.sh" && return
-	printf '%s\n' "" "Modifying $device Vendor.." ""
+	cd vendor
+
+	printf '%s\n' "" "Now modifying $device Vendor.."
 	sudo sed -i '/ogg$/d' build.prop
 	sudo sed -i '/steps=5$/d' build.prop
-	sudo sed -i "s/patch=/patch=2020-${month}-05/" build.prop
+	sudo sed -i "s/patch=/patch=2020-$(date +%m)-05/" build.prop
 	cd etc/
 	sudo sed -i 's/forceencrypt/encryptable/' fstab.samsungexynos9810
 	cd init/
@@ -23,35 +31,38 @@ modvendor () {
 	cd ../../lib
 	sudo mv liboemcrypto.so liboemcrypto.so.bak
 	cd ../..
+
 	sudo umount vendor
 	sudo rm -rf vendor
 	mv vendor.img "${device}_${version:9:4}_Vendor.img"
 	md5sum "${device}_${version:9:4}_Vendor.img" > "${device}_${version:9:4}_Vendor.img.md5sum"
 	cd ~
 	mv "$device" Vendor-NoForceEncyrpt
-	printf '%s\n' "" "Vendor generated for $device" ""
+	printf '%s\n' "" "Vendor generated for $device"
 }
 
 getromfunc () {
 	unset getrom
+	unset device
+	unset version
 
 	printf '%s\n' "" "• Exit script: Hold 'Control + c'" ""
+	printf '%s\n' "" "• Copy & paste direct link URL's of DevBase AFH mirrors, using a space to separate, to begin generating Vendor(s)"
 	printf '%s\n' "" "• Upload to Google Drive: Input 'up'" ""
-	printf '%s\n' "" "Otherwise copy & paste direct link address(es) of DevBase AFH mirrors, using a space to separate, to begin generating Vendor(s)"
-	printf "Links: "
+	printf "URL's or 'up': "
 	read -r -a getrom
 
 	if [[ "${getrom[@]}" =~ "up" ]]; then
 
 		if [ ! -d .gdrive ]; then
 			printf '%s\n' "" "Not setup GoogleDrive AuthToken" ""
-			return
+			return 2>/dev/null || exit
 		else
 			printf '%s\n' "" "Uploading to Google Drive.." ""
 			sudo wget -q -nc -O /usr/local/bin/gdrive https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-x64
 			sudo chmod a+x /usr/local/bin/gdrive
 			gdrive upload -p 1qp133uQXFNur6tKqbs251uJ5CLCUxBgI -r Vendor-NoForceEncyrpt
-			return
+			return 2>/dev/null || exit
 		fi
 
 
@@ -80,6 +91,8 @@ getromfunc () {
 
 searchfunc () {
 
+	printf '%s\n' "" "Checking if there are any ROM zips already downloaded.."
+
 	if [[ ! -z "$(ls G960*.zip 2>/dev/null)" ]]; then
 		device=G960
 		version="$(ls G960*)"
@@ -106,6 +119,12 @@ clear # Clear the screen, immerse the script
 printf "\-\- ---------------- \-\-\n"
 printf "\-\- |   ModVendor  | \-\-\n"
 printf "\-\- ---------------- \-\-\n"
+
+if [[ ! -x "${BASH_SOURCE[0]}" ]]; then
+	printf '%s\n' "Script is not executable!"
+	printf '%s\n' "Copy & Paste: sudo chmod +x modvendor.sh"
+	return 2>/dev/null || exit
+fi
 
 cd ~
 if [[ ! -d Vendor-NoForceEncyrpt ]]; then
