@@ -25,8 +25,14 @@ modvendor () {
 	cd etc/
 	sudo sed -i 's/forceencrypt/encryptable/' fstab.samsungexynos9810
 	cd init/
+	sudo mv icd_over_five_vendor.rc icd_over_five_vendor.rc.bak
 	sudo mv pa_daemon_kinibi.rc pa_daemon_kinibi.rc.bak
 	sudo mv secure_storage_daemon_kinibi.rc secure_storage_daemon_kinibi.rc.bak
+	sudo mv vendor.samsung.hardware.tlc.atn@1.0-service.rc vendor.samsung.hardware.tlc.atn@1.0-service.rc.bak
+	sudo mv vendor.samsung.hardware.tlc.iccc@1.0-service.rc vendor.samsung.hardware.tlc.iccc@1.0-service.rc.bak
+	sudo mv vendor.samsung.hardware.tlc.tima@1.0-service.rc vendor.samsung.hardware.tlc.tima@1.0-service.rc.bak
+	sudo mv vendor.samsung.hardware.tlc.ucm@1.0-service.rc vendor.samsung.hardware.tlc.ucm@1.0-service.rc.bak
+	sudo mv vendor.samsung_slsi.hardware.ExynosHWCServiceTW@1.0-service.rc vendor.samsung_slsi.hardware.ExynosHWCServiceTW@1.0-service.rc.bak
 	sudo mv vk_kinibi.rc vk_kinibi.rc.bak
 	cd ../../lib
 	sudo mv liboemcrypto.so liboemcrypto.so.bak
@@ -47,9 +53,9 @@ getromfunc () {
 	unset version
 
 	printf '%s\n' "" "• Exit script: Hold 'Control + c'" ""
-	printf '%s\n' "" "• Copy & paste direct link URL's of DevBase AFH mirrors, using a space to separate, to begin generating Vendor(s)"
-	printf '%s\n' "" "• Upload to Google Drive: Input 'up'" ""
-	printf "URL's or 'up': "
+	printf '%s\n' "" "• Copy & paste direct link URL's of DevBase AFH mirrors, using a space to separate, to begin generating Vendor(s)" ""
+	printf '%s\n' "" "• Upload to Google Drive: Input 'up'"
+	printf "URL(s) or 'up': "
 	read -r -a getrom
 
 	if [[ "${getrom[@]}" =~ "up" ]]; then
@@ -93,21 +99,21 @@ searchfunc () {
 
 	printf '%s\n' "" "Checking if there are any ROM zips already downloaded.."
 
-	if [[ ! -z "$(ls G960*.zip 2>/dev/null)" ]]; then
+	if [[ ! -z "$(ls -U G960*.zip 2>/dev/null)" ]]; then
 		device=G960
-		version="$(ls G960*)"
+		version="$(ls -U G960*)"
 		modvendor
 	fi
 
-	if [[ ! -z "$(ls G965*.zip 2>/dev/null)" ]]; then
+	if [[ ! -z "$(ls -U G965*.zip 2>/dev/null)" ]]; then
 		device=G965
-		version="$(ls G965*)"
+		version="$(ls -U G965*)"
 		modvendor
 	fi
 
-	if [[ ! -z "$(ls N960*.zip 2>/dev/null)" ]]; then
+	if [[ ! -z "$(ls -U N960*.zip 2>/dev/null)" ]]; then
 		device=N960
-		version="$(ls N960*)"
+		version="$(ls -U N960*)"
 		modvendor
 	fi
 
@@ -116,9 +122,9 @@ searchfunc () {
 }
 
 clear # Clear the screen, immerse the script
-printf "\-\- ---------------- \-\-\n"
-printf "\-\- |   ModVendor  | \-\-\n"
-printf "\-\- ---------------- \-\-\n"
+printf '%s\n' "\-\- ---------------- \-\-"
+printf '%s\n' "\-\- |   ModVendor  | \-\-"
+printf '%s\n' "\-\- ---------------- \-\-"
 
 if [[ ! -x "${BASH_SOURCE[0]}" ]]; then
 	printf '%s\n' "Script is not executable!"
