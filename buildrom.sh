@@ -29,111 +29,6 @@ filterdevicearray () {
 	fi
 }
 
-# If User sources script instead of executing, these variables turn global and could still have value. Unset to some parts of the script being skipped over
-unset romname
-unset devices
-unset readdevice
-
-# If script is sourced, can use 'quiet' flag to only pull functions from script without prompts. Flag futile if script executed
-if [[ "$1" != "quiet" ]]; then
-
-	if [[ "$1" =~ ^(lineage10|crdroid10)$ ]] # Can only choose one ROM, so pipe in brackets to seperate different ROM options
-	then
-		"$1" # Use the postional parameter to call for the corresponding ROM function, saves condition flooding
-	fi
-
-	if [[ ! -z "$2" ]]; then # First device name should be stated from second parameter
-
-		if [[ "$@" =~ "starlte" ]] || [[ "$@" =~ "star2lte" ]] || [[ "$@" =~ "crownlte" ]]; then
-
-			# If postional array contains device names, transport each stated device into the 'devices' array. To identify which devices to build
-			if [[ "$@" =~ "starlte" ]]; then
-				devices+=('starlte')
-			fi
-
-			if [[ "$@" =~ "star2lte" ]]; then
-				devices+=('star2lte')
-			fi
-
-			if [[ "$@" =~ "crownlte" ]]; then
-				devices+=('crownlte')
-			fi
-		else
-			while [[ ! "${readdevice[@]}" =~ "starlte" ]] && [[ ! "${readdevice[@]}" =~ "star2lte" ]] && [[ ! "${readdevice[@]}" =~ "crownlte" ]]
-			do
-				printf '%s\n' "" "Typo made stating a device name. Try again:" "" "Which device(s) do you want to build the $romname for? (starlte/star2lte/crownlte)"
-				printf "Device(s): "
-				read -r -a readdevice
-			done
-
-			filterdevicearray
-		fi
-	fi
-
-	if [[ ! -z "$romname" ]] && [[ ! -z "$devices" ]]; then
-
-		# Stating '-y' in command-line can skip prompt, if certain with the ROM and devices stated
-		if [[ ! "$@" =~ "-y" ]]; then
-
-			while [[ ! "$changesetup" =~ ^(Y|y|N|n)$ ]]
-			do
-				printf '%s\n' "" "Selected ROM: $romname" "" "Selected Device(s): ${devices[0]} ${devices[1]} ${devices[2]}"
-				printf "Would you like to change any of the setup? (y/N): "
-				read -n 2 -r changesetup
-				printf '%s\n' ""
-			done
-
-			if [[ "$changesetup" =~ ^[Yy]$ ]]; then
-				unset romname
-				unset devices
-				unset readdevice
-			fi
-			unset changesetup
-		fi
-	fi
-
-	if [[ ! -n "$romname" ]]; then # If no stated ROM in command-line OR changed setup, then menu
-		PS3='Please enter your number choice: '
-		roms=("LineageOS (10)" "crDroid (10)" "Quit")
-		select rom in "${roms[@]}"
-		do
-			case $rom in
-				"LineageOS (10)")
-					lineage10
-					break
-					;;
-				"crDroid (10)")
-					crdroid10
-					break
-					;;
-				"Quit")
-					return
-					;;
-				*)
-					printf '%s\n' "" "You did not choose any of the options: '$REPLY'. Try again:" ""
-					;;
-			esac
-		done
-
-		unset REPLY
-	fi
-
-	# If no stated devices in command-line OR changed setup, this final loop to state devices 
-	while [[ ! "${readdevice[@]}" =~ "starlte" ]] && [[ ! "${readdevice[@]}" =~ "star2lte" ]] && [[ ! "${readdevice[@]}" =~ "crownlte" ]]
-	do
-		printf '%s\n' "" "Which device(s) do you want to build the $romname for? (starlte/star2lte/crownlte)"
-		printf "Device(s): "
-		read -r -a readdevice
-	done
-
-	filterdevicearray
-
-	printf '%s\n' "" "Final setup: $romname for ${devices[0]} ${devices[1]} ${devices[2]}" ""
-
-	totalbuild
-
-fi
-
 # Calculate and print the accurate time for commands
 timecheck () {
 	statetime="$(printf '%02dh:%02dm:%02ds' $(( (end-start) / 3600 )) $(( ( (end-start) % 3600) / 60 )) $(( (end-start) % 60 )) )"
@@ -288,3 +183,108 @@ totalbuild () {
 	configtree
 	build
 }
+
+# If User sources script instead of executing, these variables turn global and could still have value. Unset to some parts of the script being skipped over
+unset romname
+unset devices
+unset readdevice
+
+# If script is sourced, can use 'quiet' flag to only pull functions from script without prompts. Flag futile if script executed
+if [[ "$1" != "quiet" ]]; then
+
+	if [[ "$1" =~ ^(lineage10|crdroid10)$ ]] # Can only choose one ROM, so pipe in brackets to seperate different ROM options
+	then
+		"$1" # Use the postional parameter to call for the corresponding ROM function, saves condition flooding
+	fi
+
+	if [[ ! -z "$2" ]]; then # First device name should be stated from second parameter
+
+		if [[ "$@" =~ "starlte" ]] || [[ "$@" =~ "star2lte" ]] || [[ "$@" =~ "crownlte" ]]; then
+
+			# If postional array contains device names, transport each stated device into the 'devices' array. To identify which devices to build
+			if [[ "$@" =~ "starlte" ]]; then
+				devices+=('starlte')
+			fi
+
+			if [[ "$@" =~ "star2lte" ]]; then
+				devices+=('star2lte')
+			fi
+
+			if [[ "$@" =~ "crownlte" ]]; then
+				devices+=('crownlte')
+			fi
+		else
+			while [[ ! "${readdevice[@]}" =~ "starlte" ]] && [[ ! "${readdevice[@]}" =~ "star2lte" ]] && [[ ! "${readdevice[@]}" =~ "crownlte" ]]
+			do
+				printf '%s\n' "" "Typo made stating a device name. Try again:" "" "Which device(s) do you want to build the $romname for? (starlte/star2lte/crownlte)"
+				printf "Device(s): "
+				read -r -a readdevice
+			done
+
+			filterdevicearray
+		fi
+	fi
+
+	if [[ ! -z "$romname" ]] && [[ ! -z "$devices" ]]; then
+
+		# Stating '-y' in command-line can skip prompt, if certain with the ROM and devices stated
+		if [[ ! "$@" =~ "-y" ]]; then
+
+			while [[ ! "$changesetup" =~ ^(Y|y|N|n)$ ]]
+			do
+				printf '%s\n' "" "Selected ROM: $romname" "" "Selected Device(s): ${devices[0]} ${devices[1]} ${devices[2]}"
+				printf "Would you like to change any of the setup? (y/N): "
+				read -n 2 -r changesetup
+				printf '%s\n' ""
+			done
+
+			if [[ "$changesetup" =~ ^[Yy]$ ]]; then
+				unset romname
+				unset devices
+				unset readdevice
+			fi
+			unset changesetup
+		fi
+	fi
+
+	if [[ ! -n "$romname" ]]; then # If no stated ROM in command-line OR changed setup, then menu
+		PS3='Please enter your number choice: '
+		roms=("LineageOS (10)" "crDroid (10)" "Quit")
+		select rom in "${roms[@]}"
+		do
+			case $rom in
+				"LineageOS (10)")
+					lineage10
+					break
+					;;
+				"crDroid (10)")
+					crdroid10
+					break
+					;;
+				"Quit")
+					return
+					;;
+				*)
+					printf '%s\n' "" "You did not choose any of the options: '$REPLY'. Try again:" ""
+					;;
+			esac
+		done
+
+		unset REPLY
+	fi
+
+	# If no stated devices in command-line OR changed setup, this final loop to state devices 
+	while [[ ! "${readdevice[@]}" =~ "starlte" ]] && [[ ! "${readdevice[@]}" =~ "star2lte" ]] && [[ ! "${readdevice[@]}" =~ "crownlte" ]]
+	do
+		printf '%s\n' "" "Which device(s) do you want to build the $romname for? (starlte/star2lte/crownlte)"
+		printf "Device(s): "
+		read -r -a readdevice
+	done
+
+	filterdevicearray
+
+	printf '%s\n' "" "Final setup: $romname for ${devices[0]} ${devices[1]} ${devices[2]}" ""
+
+	totalbuild
+
+fi
