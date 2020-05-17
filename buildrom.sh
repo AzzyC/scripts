@@ -37,7 +37,7 @@ timecheck () {
 buildenv () {
 
 	# Use HTTP Telegram to notify script progress AFK
-	if [[ -e .telegram.sh ]]; then
+	if [[ -e ~/.telegram.sh ]]; then
 		sudo wget -q -nc -O /usr/local/bin/telegram https://raw.githubusercontent.com/fabianonline/telegram.sh/master/telegram
 		sudo chmod a+x /usr/local/bin/telegram
 	else
@@ -45,7 +45,7 @@ buildenv () {
 	fi
 
 	# Use CLI Google Drive to upload files
-	if [[ -d .gdrive ]]; then
+	if [[ -d ~/.gdrive ]]; then
 		sudo wget -q -nc -O /usr/local/bin/gdrive https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-x64
 		sudo chmod a+x /usr/local/bin/gdrive
 	else
@@ -77,7 +77,14 @@ init () {
 
 	cd "$romname"
 	repo init -u "$rommanifest" --depth=1 --no-clone-bundle --no-tags -q
-	cd .repo || return
+
+	if [[ -d .repo ]]; then
+		cd .repo
+	else
+		printf '%s\n' "" "'repo init' failed. Is the repo tool broken?"
+		return 2>/dev/null || exit
+	fi
+
 	git clone https://github.com/synt4x93/local_manifests.git -b lineage-17.1 --depth=1 -q
 
 	printf '%s\n' "" "$romname manifest repo initialised at $(date +%T)" ""
@@ -86,7 +93,12 @@ init () {
 }
 
 romsync () {
-	cd ~/"$romname" || return
+	if [[ -d ~/"$romname" ]]; then
+		cd ~/"$romname"
+	else
+		printf '%s\n' "" "Cannot begin sync as $romname folder does not exist" ""
+		return 2>/dev/null || exit
+	fi
 
 	if [[ -d .repo ]]; then
 
@@ -106,8 +118,39 @@ configtree () {
 	"$romid"
 }
 
+generalconfig () {
+	if [[ -d ~/"$romname"/device/samsung/universal9810-common ]]; then
+		cd device/samsung/universal9810-common/
+		sed -i '/^SamsungD/d' universal9810-common.mk
+		cd ../starlte/
+		sed -i "s/lineage/$lunchname/g" AndroidProducts.mk
+		mv lineage_starlte.mk "$lunchname"_starlte.mk
+		sed -i "s/lineage/$lunchname/g" "$lunchname"_starlte.mk
+		cd ../star2lte/
+		sed -i "s/lineage/$lunchname/g" AndroidProducts.mk
+		mv lineage_star2lte.mk "$lunchname"_star2lte.mk
+		sed -i "s/lineage/$lunchname/g" "$lunchname"_star2lte.mk
+		cd ../crownlte/
+		sed -i "s/lineage/$lunchname/g" AndroidProducts.mk
+		mv lineage_crownlte.mk "$lunchname"_crownlte.mk
+		sed -i "s/lineage/$lunchname/g" "$lunchname"_crownlte.mk
+		cd ~/rom/hardware/samsung/
+		sed -i '46d' Android.mk
+		sed -i '22,24d' AdvancedDisplay/Android.mk
+	else
+		printf '%s\n' "" "Cannot configure Device Tree, as it does not exist."
+		printf '%s\n' "Did you use the 'romsync' command?" ""
+		return 2>/dev/null || exit
+	fi
+}
+
 build () {
-	cd ~/"$romname" || return
+	if [[ -d ~/"$romname" ]]; then
+		cd ~/"$romname"
+	else
+		printf '%s\n' "" "Cannot begin build as $romname folder does not exist" ""
+		return 2>/dev/null || exit
+	fi
 	. build/envsetup.sh
 
 	# Now using aforementioned 'devices' array
@@ -122,12 +165,12 @@ build () {
 
 		timecheck
 
-		if [[ -e ~/"$romname"/out/target/product/starlte/"$romname"*.zip ]]; then
-			return
+		if [[ ! -e ~/"$romname"/out/target/product/starlte/"$romname"*.zip ]]; then
 			telegram ~/fail_starlte.txt "Uh oh.. build failed after $statetime"
 			printf '%s\n' "" "" ""
 			cat ~/fail_starlte.txt
 			printf '%s\n' "" "Build failed after $statetime" "See ~/fail_starlte.txt for fail log" ""
+			return 2>/dev/null || exit
 		fi
 
 	fi
@@ -143,12 +186,12 @@ build () {
 
 		timecheck
 
-		if [[ -e ~/"$romname"/out/target/product/star2lte/"$romname"*.zip ]]; then
-			return
+		if [[ ! -e ~/"$romname"/out/target/product/star2lte/"$romname"*.zip ]]; then
 			telegram ~/fail_star2lte.txt "Uh oh.. build failed after $statetime"
 			printf '%s\n' "" "" ""
 			cat ~/fail_star2lte.txt
 			printf '%s\n' "" "Build failed after $statetime" "See ~/fail_star2lte.txt for fail log" ""
+			return 2>/dev/null || exit
 		fi
 
 	fi
@@ -164,12 +207,12 @@ build () {
 
 		timecheck
 
-		if [[ -e ~/"$romname"/out/target/product/crownlte/"$romname"*.zip ]]; then
-			return
+		if [[ ! -e ~/"$romname"/out/target/product/crownlte/"$romname"*.zip ]]; then
 			telegram ~/fail_crownlte.txt "Uh oh.. build failed after $statetime"
 			printf '%s\n' "" "" ""
 			cat ~/fail_crownlte.txt
 			printf '%s\n' "" "Build failed after $statetime" "See ~/fail_crownlte.txt for fail log" ""
+			return 2>/dev/null || exit
 		fi
 
 	fi
@@ -262,7 +305,7 @@ if [[ "$1" != "quiet" ]]; then
 					break
 					;;
 				"Quit")
-					return
+					return 2>/dev/null || exit
 					;;
 				*)
 					printf '%s\n' "" "You did not choose any of the options: '$REPLY'. Try again:" ""
