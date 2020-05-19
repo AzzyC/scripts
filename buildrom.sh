@@ -69,11 +69,16 @@ buildenv () {
 
 init () {
 
+	if [[ -z "$romname" ]]; then
+		printf '%s\n' "" "Cannot initialise ROM manifest repo, as you have not yet chosen a ROM"
+		getromanddevice
+	fi
+
 	cd ~
 
 	if [[ ! -d "$romname" ]]; then
 		mkdir "$romname"
-	else
+	fi
 
 	cd "$romname"
 	repo init -u "$rommanifest" --depth=1 --no-clone-bundle --no-tags -q
@@ -93,10 +98,15 @@ init () {
 }
 
 romsync () {
+	if [[ -z "$romname" ]]; then
+		printf '%s\n' "" "Cannot sync ROM source, as you have not yet chosen a ROM"
+		getromanddevice
+	fi
+
 	if [[ -d ~/"$romname" ]]; then
 		cd ~/"$romname"
 	else
-		printf '%s\n' "" "Cannot begin sync as $romname folder does not exist" ""
+		printf '%s\n' "" "Cannot begin sync in ROM folder, are you running low on storage?" ""
 		return 2>/dev/null || exit
 	fi
 
@@ -108,9 +118,10 @@ romsync () {
 
 		timecheck
 
-		printf '%s\n' "" "Sync Time: $statetime " ""
+		printf '%s\n' "" "Sync Time: $statetime "
 		telegram -M "***Sync Time***: ``\`$statetime\```"
-
+	else
+		printf '%s\n' "" "You have not yet initialised a ROM, to begin source sync"
 	fi
 }
 
@@ -119,6 +130,12 @@ configtree () {
 }
 
 generalconfig () {
+
+	if [[ -z "$romid" ]]; then
+		printf '%s\n' "" "Can't configure device tree(s) as ROM source doesn't exist"
+		getromanddevice
+	fi
+
 	if [[ -d ~/"$romname"/device/samsung/universal9810-common ]]; then
 		cd device/samsung/universal9810-common/
 		sed -i '/^SamsungD/d' universal9810-common.mk
@@ -137,82 +154,82 @@ generalconfig () {
 		cd ~/rom/hardware/samsung/
 		sed -i '46d' Android.mk
 		sed -i '22,24d' AdvancedDisplay/Android.mk
-	else
-		printf '%s\n' "" "Cannot configure Device Tree, as it does not exist."
-		printf '%s\n' "Did you use the 'romsync' command?" ""
-		return 2>/dev/null || exit
 	fi
 }
 
 build () {
+
+	if [[ -z "$devices" ]]; then
+		printf '%s\n' "" "You have not defined any devices to commence building"
+		getromanddevice
+	fi
+
 	if [[ -d ~/"$romname" ]]; then
 		cd ~/"$romname"
-	else
-		printf '%s\n' "" "Cannot begin build as $romname folder does not exist" ""
-		return 2>/dev/null || exit
-	fi
-	. build/envsetup.sh
+		. build/envsetup.sh
 
-	# Now using aforementioned 'devices' array
-	if [[ "${devices[@]}" =~ "starlte" ]]; then
-		lunch "$lunchname"_starlte-userdebug
+		# Now using aforementioned 'devices' array
+		if [[ "${devices[@]}" =~ "starlte" ]]; then
+			lunch "$lunchname"_starlte-userdebug
 
-		start="$(date +%s)"
-		make bacon -j$(nproc --all) 2>&1 | tee ~/make_starlte.txt
-		end="$(date +%s)"
+			start="$(date +%s)"
+			make bacon -j$(nproc --all) 2>&1 | tee ~/make_starlte.txt
+			end="$(date +%s)"
 
-		awk '/FAILED:/,EOF' ~/make_starlte.txt ~/fail_starlte.txt # Trim make log down to just show fail
+			awk '/FAILED:/,EOF' ~/make_starlte.txt ~/fail_starlte.txt # Trim make log down to just show fail
 
-		timecheck
+			timecheck
 
-		if [[ ! -e ~/"$romname"/out/target/product/starlte/"$romname"*.zip ]]; then
-			telegram ~/fail_starlte.txt "Uh oh.. build failed after $statetime"
-			printf '%s\n' "" "" ""
-			cat ~/fail_starlte.txt
-			printf '%s\n' "" "Build failed after $statetime" "See ~/fail_starlte.txt for fail log" ""
-			return 2>/dev/null || exit
+			if [[ ! -e ~/"$romname"/out/target/product/starlte/"$romname"*.zip ]]; then
+				telegram ~/fail_starlte.txt "Uh oh.. build failed after $statetime"
+				printf '%s\n' "" "" ""
+				cat ~/fail_starlte.txt
+				printf '%s\n' "" "Build failed after $statetime" "See ~/fail_starlte.txt for fail log" ""
+				return 2>/dev/null || exit
+			fi
+
 		fi
 
-	fi
+		if [[ "${devices[@]}" =~ "star2lte" ]]; then
+			lunch "$lunchname"_star2lte-userdebug
 
-	if [[ "${devices[@]}" =~ "star2lte" ]]; then
-		lunch "$lunchname"_star2lte-userdebug
+			start="$(date +%s)"
+			make bacon -j$(nproc --all) 2>&1 | tee ~/make_star2lte.txt
+			end="$(date +%s)"
 
-		start="$(date +%s)"
-		make bacon -j$(nproc --all) 2>&1 | tee ~/make_star2lte.txt
-		end="$(date +%s)"
+			awk '/FAILED:/,EOF' ~/make_star2lte.txt ~/fail_star2lte.txt
 
-		awk '/FAILED:/,EOF' ~/make_star2lte.txt ~/fail_star2lte.txt
+			timecheck
 
-		timecheck
+			if [[ ! -e ~/"$romname"/out/target/product/star2lte/"$romname"*.zip ]]; then
+				telegram ~/fail_star2lte.txt "Uh oh.. build failed after $statetime"
+				printf '%s\n' "" "" ""
+				cat ~/fail_star2lte.txt
+				printf '%s\n' "" "Build failed after $statetime" "See ~/fail_star2lte.txt for fail log" ""
+				return 2>/dev/null || exit
+			fi
 
-		if [[ ! -e ~/"$romname"/out/target/product/star2lte/"$romname"*.zip ]]; then
-			telegram ~/fail_star2lte.txt "Uh oh.. build failed after $statetime"
-			printf '%s\n' "" "" ""
-			cat ~/fail_star2lte.txt
-			printf '%s\n' "" "Build failed after $statetime" "See ~/fail_star2lte.txt for fail log" ""
-			return 2>/dev/null || exit
 		fi
 
-	fi
+		if [[ "${devices[@]}" =~ "crownlte" ]]; then
+			lunch "$lunchname"_crownlte-userdebug
 
-	if [[ "${devices[@]}" =~ "crownlte" ]]; then
-		lunch "$lunchname"_crownlte-userdebug
+			start="$(date +%s)"
+			make bacon -j$(nproc --all) 2>&1 | tee ~/make_crownlte.txt
+			end="$(date +%s)"
 
-		start="$(date +%s)"
-		make bacon -j$(nproc --all) 2>&1 | tee ~/make_crownlte.txt
-		end="$(date +%s)"
+			awk '/FAILED:/,EOF' ~/make_crownlte.txt ~/fail_crownlte.txt
 
-		awk '/FAILED:/,EOF' ~/make_crownlte.txt ~/fail_crownlte.txt
+			timecheck
 
-		timecheck
+			if [[ ! -e ~/"$romname"/out/target/product/crownlte/"$romname"*.zip ]]; then
+				telegram ~/fail_crownlte.txt "Uh oh.. build failed after $statetime"
+				printf '%s\n' "" "" ""
+				cat ~/fail_crownlte.txt
+				printf '%s\n' "" "Build failed after $statetime" "See ~/fail_crownlte.txt for fail log" ""
+				return 2>/dev/null || exit
+			fi
 
-		if [[ ! -e ~/"$romname"/out/target/product/crownlte/"$romname"*.zip ]]; then
-			telegram ~/fail_crownlte.txt "Uh oh.. build failed after $statetime"
-			printf '%s\n' "" "" ""
-			cat ~/fail_crownlte.txt
-			printf '%s\n' "" "Build failed after $statetime" "See ~/fail_crownlte.txt for fail log" ""
-			return 2>/dev/null || exit
 		fi
 
 	fi
@@ -227,107 +244,111 @@ totalbuild () {
 	build
 }
 
-# If User sources script instead of executing, these variables turn global and could still have value. Unset to some parts of the script being skipped over
-unset romname
-unset devices
-unset readdevice
+getromanddevice () {
+	# If User sources script instead of executing, these variables turn global and could still have value. Unset to some parts of the script being skipped over
+	unset romname
+	unset devices
+	unset readdevice
 
-# If script is sourced, can use 'quiet' flag to only pull functions from script without prompts. Flag futile if script executed
-if [[ "$1" != "quiet" ]]; then
+	# If script is sourced, can use 'quiet' flag to only pull functions from script without prompts. Flag futile if script executed
+	if [[ "$1" != "quiet" ]]; then
 
-	if [[ "$1" =~ ^(lineage10|crdroid10)$ ]] # Can only choose one ROM, so pipe in brackets to seperate different ROM options
-	then
-		"$1" # Use the postional parameter to call for the corresponding ROM function, saves condition flooding
-	fi
+		if [[ "$1" =~ ^(lineage10|crdroid10)$ ]] # Can only choose one ROM, so pipe in brackets to seperate different ROM options
+		then
+			"$1" # Use the postional parameter to call for the corresponding ROM function, saves condition flooding
+		fi
 
-	if [[ ! -z "$2" ]]; then # First device name should be stated from second parameter
+		if [[ ! -z "$2" ]]; then # First device name should be stated from second parameter
 
-		if [[ "$@" =~ "starlte" ]] || [[ "$@" =~ "star2lte" ]] || [[ "$@" =~ "crownlte" ]]; then
+			if [[ "$@" =~ "starlte" ]] || [[ "$@" =~ "star2lte" ]] || [[ "$@" =~ "crownlte" ]]; then
 
-			# If postional array contains device names, transport each stated device into the 'devices' array. To identify which devices to build
-			if [[ "$@" =~ "starlte" ]]; then
-				devices+=('starlte')
+				# If postional array contains device names, transport each stated device into the 'devices' array. To identify which devices to build
+				if [[ "$@" =~ "starlte" ]]; then
+					devices+=('starlte')
+				fi
+
+				if [[ "$@" =~ "star2lte" ]]; then
+					devices+=('star2lte')
+				fi
+
+				if [[ "$@" =~ "crownlte" ]]; then
+					devices+=('crownlte')
+				fi
+			else
+				while [[ ! "${readdevice[@]}" =~ "starlte" ]] && [[ ! "${readdevice[@]}" =~ "star2lte" ]] && [[ ! "${readdevice[@]}" =~ "crownlte" ]]
+				do
+					printf '%s\n' "" "Typo made stating a device name. Try again:" "" "Which device(s) do you want to build the $romname for? (starlte/star2lte/crownlte)"
+					printf "Device(s): "
+					read -r -a readdevice
+				done
+
+				filterdevicearray
 			fi
+		fi
 
-			if [[ "$@" =~ "star2lte" ]]; then
-				devices+=('star2lte')
-			fi
+		if [[ ! -z "$romname" ]] && [[ ! -z "$devices" ]]; then
 
-			if [[ "$@" =~ "crownlte" ]]; then
-				devices+=('crownlte')
+			# Stating '-y' in command-line can skip prompt, if certain with the ROM and devices stated
+			if [[ ! "$@" =~ "-y" ]]; then
+
+				while [[ ! "$changesetup" =~ ^(Y|y|N|n)$ ]]
+				do
+					printf '%s\n' "" "Selected ROM: $romname" "" "Selected Device(s): ${devices[0]} ${devices[1]} ${devices[2]}"
+					printf "Would you like to change any of the setup? (y/N): "
+					read -n 2 -r changesetup
+					printf '%s\n' ""
+				done
+
+				if [[ "$changesetup" =~ ^[Yy]$ ]]; then
+					unset romname
+					unset devices
+					unset readdevice
+				fi
+				unset changesetup
 			fi
-		else
-			while [[ ! "${readdevice[@]}" =~ "starlte" ]] && [[ ! "${readdevice[@]}" =~ "star2lte" ]] && [[ ! "${readdevice[@]}" =~ "crownlte" ]]
+		fi
+
+		if [[ ! -n "$romname" ]]; then # If no stated ROM in command-line OR changed setup, then menu
+			PS3='Please enter your number choice: '
+			roms=("LineageOS (10)" "crDroid (10)" "Quit")
+			select rom in "${roms[@]}"
 			do
-				printf '%s\n' "" "Typo made stating a device name. Try again:" "" "Which device(s) do you want to build the $romname for? (starlte/star2lte/crownlte)"
-				printf "Device(s): "
-				read -r -a readdevice
+				case $rom in
+					"LineageOS (10)")
+						lineage10
+						break
+						;;
+					"crDroid (10)")
+						crdroid10
+						break
+						;;
+					"Quit")
+						return 2>/dev/null || exit
+						;;
+					*)
+						printf '%s\n' "" "You did not choose any of the options: '$REPLY'. Try again:" ""
+						;;
+				esac
 			done
 
-			filterdevicearray
+			unset REPLY
 		fi
-	fi
 
-	if [[ ! -z "$romname" ]] && [[ ! -z "$devices" ]]; then
-
-		# Stating '-y' in command-line can skip prompt, if certain with the ROM and devices stated
-		if [[ ! "$@" =~ "-y" ]]; then
-
-			while [[ ! "$changesetup" =~ ^(Y|y|N|n)$ ]]
-			do
-				printf '%s\n' "" "Selected ROM: $romname" "" "Selected Device(s): ${devices[0]} ${devices[1]} ${devices[2]}"
-				printf "Would you like to change any of the setup? (y/N): "
-				read -n 2 -r changesetup
-				printf '%s\n' ""
-			done
-
-			if [[ "$changesetup" =~ ^[Yy]$ ]]; then
-				unset romname
-				unset devices
-				unset readdevice
-			fi
-			unset changesetup
-		fi
-	fi
-
-	if [[ ! -n "$romname" ]]; then # If no stated ROM in command-line OR changed setup, then menu
-		PS3='Please enter your number choice: '
-		roms=("LineageOS (10)" "crDroid (10)" "Quit")
-		select rom in "${roms[@]}"
+		# If no stated devices in command-line OR changed setup, this final loop to state devices 
+		while [[ ! "${readdevice[@]}" =~ "starlte" ]] && [[ ! "${readdevice[@]}" =~ "star2lte" ]] && [[ ! "${readdevice[@]}" =~ "crownlte" ]]
 		do
-			case $rom in
-				"LineageOS (10)")
-					lineage10
-					break
-					;;
-				"crDroid (10)")
-					crdroid10
-					break
-					;;
-				"Quit")
-					return 2>/dev/null || exit
-					;;
-				*)
-					printf '%s\n' "" "You did not choose any of the options: '$REPLY'. Try again:" ""
-					;;
-			esac
+			printf '%s\n' "" "Which device(s) do you want to build the $romname for? (starlte/star2lte/crownlte)"
+			printf "Device(s): "
+			read -r -a readdevice
 		done
 
-		unset REPLY
+		filterdevicearray
+
+		printf '%s\n' "" "Final setup: $romname for ${devices[0]} ${devices[1]} ${devices[2]}" ""
+
+		totalbuild
+
 	fi
+}
 
-	# If no stated devices in command-line OR changed setup, this final loop to state devices 
-	while [[ ! "${readdevice[@]}" =~ "starlte" ]] && [[ ! "${readdevice[@]}" =~ "star2lte" ]] && [[ ! "${readdevice[@]}" =~ "crownlte" ]]
-	do
-		printf '%s\n' "" "Which device(s) do you want to build the $romname for? (starlte/star2lte/crownlte)"
-		printf "Device(s): "
-		read -r -a readdevice
-	done
-
-	filterdevicearray
-
-	printf '%s\n' "" "Final setup: $romname for ${devices[0]} ${devices[1]} ${devices[2]}" ""
-
-	totalbuild
-
-fi
+getromanddevice "$1" "$2" "$3" "$4"
