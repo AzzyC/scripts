@@ -274,15 +274,11 @@ getromanddevice () {
 				if [[ "$@" =~ "crownlte" ]]; then
 					devices+=('crownlte')
 				fi
-			else
-				while [[ ! "${readdevice[@]}" =~ "starlte" ]] && [[ ! "${readdevice[@]}" =~ "star2lte" ]] && [[ ! "${readdevice[@]}" =~ "crownlte" ]]
-				do
-					printf '%s\n' "" "Typo made stating a device name. Try again:" "" "Which device(s) do you want to build the $romname for? (starlte/star2lte/crownlte)"
-					printf "Device(s): "
-					read -r -a readdevice
-				done
 
 				filterdevicearray
+			else
+				printf '%s\n' "" "Typo error made stating a device(s) name"
+				unset devices
 			fi
 		fi
 
@@ -334,15 +330,52 @@ getromanddevice () {
 			unset REPLY
 		fi
 
-		# If no stated devices in command-line OR changed setup, this final loop to state devices 
-		while [[ ! "${readdevice[@]}" =~ "starlte" ]] && [[ ! "${readdevice[@]}" =~ "star2lte" ]] && [[ ! "${readdevice[@]}" =~ "crownlte" ]]
-		do
-			printf '%s\n' "" "Which device(s) do you want to build the $romname for? (starlte/star2lte/crownlte)"
-			printf "Device(s): "
-			read -r -a readdevice
-		done
+		# If no stated devices in command-line OR changed setup, this final menu to state devices
+		if [[ ! -n "$devices" ]]; then
+			PS3='Please enter your number choice: '
+			readdevice=("star" "star2" "crown" "star star2" "star crown" "star2 crown" "star star2 crown" "Quit")
+			select rom in "${readdevice[@]}"
+			do
+				case $rom in
+					"star")
+						devices+=('starlte')
+						break
+						;;
+					"star2")
+						devices+=('star2lte')
+						break
+						;;
+					"crown")
+						devices+=('crownlte')
+						break
+						;;
+					"star star2")
+						devices+=('starlte' 'star2lte')
+						break
+						;;
+					"star crown")
+						devices+=('starlte' 'crownlte')
+						break
+						;;
+					"star2 crown")
+						devices+=('star2lte' 'crownlte')
+						break
+						;;
+					"star star2 crown")
+						devices+=('starlte' 'star2lte' 'crownlte')
+						break
+						;;
+					"Quit")
+						return 2>/dev/null || exit
+						;;
+					*)
+						printf '%s\n' "" "You did not choose any of the options: '$REPLY'. Try again:" ""
+						;;
+				esac
+			done
 
-		filterdevicearray
+			unset REPLY
+		fi
 
 		printf '%s\n' "" "Final setup: $romname for ${devices[0]} ${devices[1]} ${devices[2]}" ""
 
@@ -351,4 +384,4 @@ getromanddevice () {
 	fi
 }
 
-getromanddevice "$1" "$2" "$3" "$4"
+getromanddevice "$1" "$2" "$3" "$4" "$5"
