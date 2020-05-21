@@ -14,21 +14,6 @@ crdroid10 () {
 	lunchname="lineage"
 }
 
-# Function supports filtering Users' input for words that dont resemble device names
-filterdevicearray () {
-	if [[ "${readdevice[@]}" =~ "starlte" ]]; then
-		devices+=('starlte')
-	fi
-
-	if [[ "${readdevice[@]}" =~ "star2lte" ]]; then
-		devices+=('star2lte')
-	fi
-
-	if [[ "${readdevice[@]}" =~ "crownlte" ]]; then
-		devices+=('crownlte')
-	fi
-}
-
 # Calculate and print the accurate time for commands
 timecheck () {
 	statetime="$(printf '%02dh:%02dm:%02ds' $(( (end-start) / 3600 )) $(( ( (end-start) % 3600) / 60 )) $(( (end-start) % 60 )) )"
@@ -274,8 +259,6 @@ getromanddevice () {
 				if [[ "$@" =~ "crownlte" ]]; then
 					devices+=('crownlte')
 				fi
-
-				filterdevicearray
 			else
 				printf '%s\n' "" "Typo error made stating a device(s) name"
 				unset devices
