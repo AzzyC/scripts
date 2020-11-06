@@ -59,13 +59,7 @@ init () {
 		getromanddevice
 	fi
 
-	cd ~
-
-	if [[ ! -d "$romname" ]]; then
-		mkdir "$romname"
-	fi
-
-	cd "$romname"
+	mkdir -p ~/"$romname" && cd ~/"$romname"
 	repo init -u "$rommanifest" --depth=1 --no-clone-bundle --no-tags -q
 
 	if [[ -d .repo ]]; then
@@ -75,7 +69,7 @@ init () {
 		return 2>/dev/null || exit
 	fi
 
-	git clone https://github.com/synt4x93/local_manifests.git -b lineage-17.1 --depth=1 -q
+	git clone https://github.com/synt4x93/local_manifests.git -b lineage-17.1 --depth=1 -j$(nproc --all) -q
 
 	printf '%s\n' "" "$romname manifest repo initialised at $(date +%T)" ""
 	telegram "$romname manifest repo initialised"
@@ -144,6 +138,8 @@ generalconfig () {
 
 build () {
 
+	mkdir -p ~/compiled
+
 	if [[ -z "$devices" ]]; then
 		printf '%s\n' "" "You have not defined any devices to commence building"
 		getromanddevice
@@ -155,13 +151,14 @@ build () {
 
 		# Now using aforementioned 'devices' array
 		if [[ "${devices[@]}" =~ "starlte" ]]; then
+			make installclean
 			lunch "$lunchname"_starlte-userdebug
 
 			start="$(date +%s)"
 			make bacon -j$(nproc --all) 2>&1 | tee ~/make_starlte.txt
 			end="$(date +%s)"
 
-			awk '/FAILED:/,EOF' ~/make_starlte.txt ~/fail_starlte.txt # Trim make log down to just show fail
+			awk '/FAILED:/,EOF' ~/make_starlte.txt > ~/fail_starlte.txt # Trim make log down to just show fail
 
 			timecheck
 
@@ -176,13 +173,14 @@ build () {
 		fi
 
 		if [[ "${devices[@]}" =~ "star2lte" ]]; then
+			make installclean
 			lunch "$lunchname"_star2lte-userdebug
 
 			start="$(date +%s)"
 			make bacon -j$(nproc --all) 2>&1 | tee ~/make_star2lte.txt
 			end="$(date +%s)"
 
-			awk '/FAILED:/,EOF' ~/make_star2lte.txt ~/fail_star2lte.txt
+			awk '/FAILED:/,EOF' ~/make_star2lte.txt > ~/fail_star2lte.txt
 
 			timecheck
 
@@ -197,13 +195,14 @@ build () {
 		fi
 
 		if [[ "${devices[@]}" =~ "crownlte" ]]; then
+			make installclean
 			lunch "$lunchname"_crownlte-userdebug
 
 			start="$(date +%s)"
 			make bacon -j$(nproc --all) 2>&1 | tee ~/make_crownlte.txt
 			end="$(date +%s)"
 
-			awk '/FAILED:/,EOF' ~/make_crownlte.txt ~/fail_crownlte.txt
+			awk '/FAILED:/,EOF' ~/make_crownlte.txt > ~/fail_crownlte.txt
 
 			timecheck
 
@@ -216,6 +215,9 @@ build () {
 			fi
 
 		fi
+
+		mv ~/"$romname"/out/target/product/*lte/"$romname"*lte*.zip ~/compiled
+		mv ~/"$romname"/out/target/product/*lte/"$romname"*lte*.zip.md5sum ~/compiled
 
 	fi
 }
