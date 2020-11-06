@@ -11,7 +11,7 @@ maghrib="${prayertimelist[5]}"
 isha="${prayertimelist[6]}"
 
 printed="$(printf '%s\n' "Prayer Times ($(date +%d/%m/%Y))" "*Fajr*: ${fajr}" "*Sunrise*: ${sunrise}" "*Zuhr*: ${zuhr}" "*Asr*: ${asr}" "*Maghrib*: ${maghrib}" "*Isha*: ${isha}")"
-printf "$printed"
+printf '%s\n' "" "$printed" | sed 's/*//g' # No WhatsApp format on Terminal
 ./telegram "$printed"
 
 rm masjidtimes.txt # Remove temporary file after
