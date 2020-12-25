@@ -1,165 +1,34 @@
-package:com.google.android.carriersetup
-package:org.lineageos.overlay.accent.black
-package:com.android.cts.priv.ctsshim
-package:org.lineageos.overlay.accent.brown
-package:org.lineageos.overlay.accent.green
-package:com.android.internal.display.cutout.emulation.corner
-package:com.google.android.ext.services
-package:org.lineageos.overlay.customization.blacktheme
-package:com.android.internal.display.cutout.emulation.double
-package:com.android.providers.telephony
-package:com.android.dynsystem
-package:com.android.providers.calendar
-package:com.android.providers.media
-package:com.stevesoltys.seedvault
-package:com.google.android.onetimeinitializer
-package:com.google.android.ext.shared
-package:com.android.internal.systemui.navbar.gestural_wide_back
-package:com.android.wallpapercropper
-package:com.android.theme.color.cinnamon
-package:com.android.theme.icon_pack.rounded.systemui
-package:com.android.documentsui
-package:com.android.externalstorage
-package:com.android.htmlviewer
-package:com.android.companiondevicemanager
-package:com.android.mms.service
-package:com.android.providers.downloads
-package:com.android.messaging
-package:com.android.terminal
-package:com.android.theme.icon_pack.rounded.android
-package:com.android.theme.icon_pack.circular.themepicker
-package:com.google.android.configupdater
-package:com.android.providers.downloads.ui
-package:com.android.vending
-package:com.android.pacprocessor
-package:com.android.simappdialog
-package:com.android.networkstack
-package:org.lineageos.profiles
-package:com.android.internal.display.cutout.emulation.tall
-package:com.android.modulemetadata
-package:com.android.certinstaller
-package:com.android.theme.color.black
-package:com.android.carrierconfig
-package:com.android.theme.color.green
-package:com.android.theme.color.ocean
-package:com.android.theme.color.space
-package:com.android.internal.systemui.navbar.threebutton
-package:android
-package:com.android.hotwordenrollment.xgoogle
-package:com.android.contacts
-package:org.lineageos.recorder
-package:com.android.theme.icon_pack.rounded.launcher
-package:com.android.egg
-package:com.android.mtp
-package:com.android.nfc
-package:com.android.ons
-package:com.android.stk
-package:com.android.launcher3
-package:com.android.backupconfirm
-package:org.lineageos.settings.doze
-package:com.android.internal.systemui.navbar.twobutton
-package:com.android.statementservice
-package:com.android.hotspot2
-package:com.android.settings.intelligence
-package:com.android.internal.systemui.navbar.gestural_extra_wide_back
-package:com.google.android.setupwizard
-package:org.lineageos.setupwizard
-package:com.android.providers.settings
-package:com.android.sharedstoragebackup
-package:com.android.printspooler
-package:com.android.hotwordenrollment.okgoogle
-package:com.android.theme.icon_pack.filled.settings
-package:com.android.dreams.basic
-package:com.android.webview
-package:com.android.se
-package:com.android.inputdevices
-package:org.lineageos.overlay.accent.orange
-package:com.android.bips
-package:org.lineageos.overlay.accent.purple
-package:com.android.theme.icon_pack.circular.settings
-package:org.lineageos.overlay.font.rubik
-package:com.android.cellbroadcastreceiver
-package:com.android.theme.icon.teardrop
-package:org.lineageos.overlay.accent.yellow
-package:com.android.server.telecom
-package:com.google.android.syncadapters.contacts
-package:org.lineageos.overlay.accent.blue
-package:org.lineageos.overlay.accent.cyan
-package:org.lineageos.overlay.accent.pink
-package:com.android.theme.icon_pack.rounded.themepicker
-package:com.android.keychain
-package:com.android.printservice.recommendation
-package:com.android.dialer
-package:com.android.gallery3d
-package:com.android.theme.icon_pack.filled.systemui
-package:com.google.android.packageinstaller
-package:com.google.android.gms
-package:com.google.android.gsf
-package:com.google.android.tts
-package:com.android.calllogbackup
-package:com.google.android.partnersetup
-package:com.android.localtransport
-package:com.android.carrierdefaultapp
-package:org.lineageos.jelly
-package:com.android.theme.font.notoserifsource
-package:com.android.theme.icon_pack.filled.android
-package:com.android.proxyhandler
-package:com.android.theme.icon_pack.circular.systemui
-package:com.android.inputmethod.latin
-package:org.lineageos.eleven
-package:com.google.android.feedback
-package:org.lineageos.etar
-package:org.lineageos.snap
-package:com.google.android.syncadapters.calendar
-package:com.android.managedprovisioning
-package:org.lineageos.overlay.customization.navbar.nohint
-package:com.android.dreams.phototable
-package:org.lineageos.overlay.accent.red
-package:com.android.smspush
-package:org.lineageos.overlay.font.lato
-package:com.android.wallpaper.livepicker
-package:com.android.apps.tag
-package:com.android.theme.icon.squircle
-package:com.google.android.backuptransport
-package:com.android.storagemanager
-package:com.android.bookmarkprovider
-package:com.android.settings
-package:com.android.theme.icon_pack.filled.launcher
-package:com.android.networkstack.permissionconfig
-package:com.android.calculator2
-package:org.lineageos.updater
-package:com.android.cts.ctsshim
-package:org.lineageos.lineageparts
-package:com.android.theme.icon_pack.circular.launcher
-package:com.android.wallpaper
-package:org.lineageos.lineagesettings
-package:com.android.vpndialogs
-package:lineageos.platform
-package:com.android.email
-package:com.android.phone
-package:com.android.shell
-package:com.android.theme.icon_pack.filled.themepicker
-package:com.android.wallpaperbackup
-package:com.android.providers.blockednumber
-package:com.android.providers.userdictionary
-package:com.android.emergency
-package:com.android.internal.systemui.navbar.gestural
-package:com.android.location.fused
-package:com.android.theme.color.orchid
-package:com.android.deskclock
-package:com.android.systemui
-package:org.lineageos.customization
-package:com.android.exchange
-package:com.android.theme.color.purple
-package:com.android.bluetoothmidiservice
-package:com.android.permissioncontroller
-package:org.lineageos.backgrounds
-package:com.android.traceur
-package:com.android.bluetooth
-package:com.android.providers.contacts
-package:com.android.captiveportallogin
-package:com.android.theme.icon.roundedrect
-package:com.android.internal.systemui.navbar.gestural_narrow_back
-package:com.android.theme.icon_pack.rounded.settings
-package:com.android.theme.icon_pack.circular.android
-package:com.google.android.apps.restore
+su
+pm disable com.android.internal.display.cutout.emulation.corner
+pm disable com.android.internal.display.cutout.emulation.double
+pm disable com.google.android.onetimeinitializer
+pm disable com.android.htmlviewer
+pm disable com.android.messaging
+pm disable com.android.internal.display.cutout.emulation.tall
+pm disable com.android.egg
+pm disable com.google.android.setupwizard
+pm disable com.android.gallery3d
+pm disable com.android.calllogbackup
+pm disable org.lineageos.jelly
+pm disable com.android.inputmethod.latin
+pm disable org.lineageos.eleven
+pm disable com.google.android.feedback
+pm disable org.lineageos.snap
+pm disable com.android.managedprovisioning
+pm disable com.android.dreams.phototable
+pm disable com.android.wallpaper.livepicker
+pm disable com.android.bookmarkprovider
+pm disable com.android.email
+pm disable com.android.providers.userdictionary
+pm disable com.android.exchange
+pm disable com.google.android.apps.restore
+pm disable org.lineageos.overlay.accent.black
+pm disable org.lineageos.overlay.accent.brown
+pm disable org.lineageos.overlay.accent.green
+pm disable org.lineageos.overlay.accent.orange
+pm disable org.lineageos.overlay.accent.purple
+pm disable org.lineageos.overlay.accent.yellow
+pm disable org.lineageos.overlay.accent.blue
+pm disable org.lineageos.overlay.accent.cyan
+pm disable org.lineageos.overlay.accent.pink
+pm disable org.lineageos.overlay.accent.red
