@@ -1,12 +1,20 @@
-#curl -L https://github.com/rdp/screen-capture-recorder-to-video-windows-free/releases/download/v0.12.11/Setup.Screen.Capturer.Recorder.v0.12.11.exe > /c/Users/"$(whoami)"/Downloads/Setup.Screen.Capturer.Recorder.v0.12.11.exe
-#/c/Users/"$(whoami)"/Downloads/Setup.Screen.Capturer.Recorder.v0.12.11.exe
-#rm -rf /c/ProgramData/Microsoft/Windows/Start\ Menu/Programs/Screen\ Capturer\ Recorder/
+#!/bin/bash
+if [[ ! -d "/c/Program Files (x86)/Screen Capturer Recorder/" ]]; then
+	printf '%s\n' "Screen Capture Recorder is not installed" "Downloading latest GitHub release.."
+	curl -L "$(curl -s https://github.com/rdp/screen-capture-recorder-to-video-windows-free/releases/ | grep -m1 exe | awk '{print $2}' | sed 's/href="/https:\/\/github.com/;s/"//')" > /c/Users/"$(whoami)"/Downloads/Setup.Screen.Capturer.Recorder.exe
+	printf "File Downloaded"
+	/c/Users/"$(whoami)"/Downloads/Setup.Screen.Capturer.Recorder.exe
+	rm -rf "/c/ProgramData/Microsoft/Windows/Start Menu/Programs/Screen Capturer Recorder/"
+fi
 
-#curl -L "$(curl -s https://github.com/BtbN/FFmpeg-Builds/releases | grep -m 1 ffmpeg-n4.3.1-29-g89daac5fe2-win64-gpl-4.3.zip | awk '{print $2}' | sed 's/href="/https:\/\/github.com/;s/"/ /')" > /c/Users/"$(whoami)"/Documents/ffmpeg.zip
-#unzip /c/Users/"$(whoami)"/Documents/ffmpeg.zip -d /c/Users/"$(whoami)"/Documents
-#mv /c/Users/"$(whoami)"/Documents/ffmpeg/bin/* /c/Users/"$(whoami)"/Documents/ffmpeg
-#rm -rf /c/Users/"$(whoami)"/Documents/ffmpeg/doc /c/Users/"$(whoami)"/Documents/ffmpeg/bin
-#export PATH="/c/Users/"$(whoami)"/Documents/ffmpeg:$PATH"
+ffmpeg -loglevel quiet > /dev/null 2>&1
+if [[ $? -eq 127 ]]; then
+	curl -L "$(curl -s https://github.com/BtbN/FFmpeg-Builds/releases | grep -m 1 ffmpeg-n4.3.1-29-g89daac5fe2-win64-gpl-4.3.zip | awk '{print $2}' | sed 's/href="/https:\/\/github.com/;s/"//')" > /c/Users/"$(whoami)"/Documents/ffmpeg.zip
+	unzip /c/Users/"$(whoami)"/Documents/ffmpeg.zip -d /c/Users/"$(whoami)"/Documents
+	mv /c/Users/"$(whoami)"/Documents/ffmpeg/bin/* /c/Users/"$(whoami)"/Documents/ffmpeg
+	rm -rf /c/Users/"$(whoami)"/Documents/ffmpeg/doc /c/Users/"$(whoami)"/Documents/ffmpeg/bin
+	export PATH="/c/Users/"$(whoami)"/Documents/ffmpeg:$PATH"
+fi
 
 printf "Current Max Recording Limit: $(grep audio "${BASH_SOURCE[0]}" | awk '{print $16}')\n"
 
@@ -16,3 +24,5 @@ printf "\nRecording Duration: $(ffprobe -v quiet -print_format compact=print_sec
 printf "\nRecording Ended: $(date +'%a %d-%m-%Y %H.%M.%S')\n"
 
 mv /c/Users/"$(whoami)"/Desktop/ScreenRecord/streaming.mp4 /c/Users/"$(whoami)"/Desktop/ScreenRecord/"$(date +'%a %d-%m-%Y %H.%M.%S')".mp4
+printf "\nRecording Folder Size: $(du -h /c/Users/$(whoami)/Desktop/ScreenRecord | awk '{print $1}')B\n"
+explorer.exe \\Users\"$(whoami)\\Desktop\\ScreenRecord
