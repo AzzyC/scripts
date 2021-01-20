@@ -17,15 +17,41 @@ UniWinPkgs=(
 	'NVIDIA Control Panel' 'Realtek Codec Console(Realtek Audio Driver Hardware Support App)' 'Sonic Studio 3 UWP' 'MyASUS UWP'\
 	)
 
-curl -Ls "https://rog.asus.com/support/webapi/product/GetPDDrivers?website=global&model=G531GV&pdid=10923&mode=&cpu=G531GT&osid=45&active=&LevelTagId=9180" | grep -E -- 'Title|FileSize|ReleaseD|Global|China' | sed 's/China.*//g; s/"//g; s/   *//g; s/,//g; s/Title/Driver Name/g; s/ReleaseDate/Released/g; s/Global/URL/g' > ./drivers.txt
-sed -i "1i Script Bashed Date: $(date +'%a %b %d %Y')\n" ./drivers.txt
+zipFolders=(
+	'WirelessProset' 'NahimicComponent' 'RefreshRate' 'AsusMultiAntenna'
+	)
 
-for drivers in "${driversSupportPage[@]}"; do
-	printf '%s\n' ""
-	grep -m1 "$drivers" -A3 ./drivers.txt
-	curl -LO --progress-bar "$(grep -m1 "$drivers" -A3 ./drivers.txt | sed '/^Driver/d; /^File/d; /^Released/d; s/URL: //g')"
-done
+currentDir="$PWD"
 
-curl -LO --progress-bar "$(curl -s "https://www.intel.co.uk/content/www/uk/en/support/detect.html" | grep -m1 'Download now' | sed 's/<a href=//; s/ class.*//; s/'\''//g; s/  *//')"
+download () {
+	curl -Ls "https://rog.asus.com/support/webapi/product/GetPDDrivers?website=global&model=G531GV&pdid=10923&mode=&cpu=G531GT&osid=45&active=&LevelTagId=9180" | grep -E -- 'Title|FileSize|ReleaseD|Global|China' | sed 's/China.*//g; s/"//g; s/   *//g; s/,//g; s/Title/Driver Name/g; s/ReleaseDate/Released/g; s/Global/URL/g' > ./drivers.txt
+	sed -i "1i Script Bashed Date: $(date +'%a %b %d %Y')\n" ./drivers.txt
 
-sha256sum ./* > ./sha256sumDrivers.txt
+	for drivers in "${driversSupportPage[@]}"; do
+		printf '%s\n' ""
+		grep -m1 "$drivers" -A3 ./drivers.txt
+		curl -LO --progress-bar "$(grep -m1 "$drivers" -A3 ./drivers.txt | sed '/^Driver/d; /^File/d; /^Released/d; s/URL: //g')"
+	done
+
+	curl -LO --progress-bar "$(curl -s "https://www.intel.co.uk/content/www/uk/en/support/detect.html" | grep -m1 'Download now' | sed 's/<a href=//; s/ class.*//; s/'\''//g; s/  *//')"
+
+	sha256sum ./* > ./sha256sumDrivers.txt
+}
+
+install () {
+	mkdir -p /c/DRIVERS/
+	cp ./* /c/DRIVERS/
+	cd /c/DRIVERS/
+	sha256sum --check ./sha256sumDrivers.txt
+
+	for zips in "${zipFolders[@]}"; do
+		zipName="$(ls ${zips}*.zip)"
+		folderName="$(printf $zipName | sed 's/.zip//')"
+		unzip "$zipName" -d "$folderName"
+	done
+
+	cd "$currentDir"
+}
+
+download
+install
