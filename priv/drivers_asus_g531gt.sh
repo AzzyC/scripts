@@ -10,8 +10,12 @@ driversSupportPage=(
 	'Realtek Audio Driver' 'Intel Graphics Driver' 'NVIDIA Graphic Driver' 'ASUS Precision TouchPad Driver' 'ASUS Precision TouchPad Driver (NumberPad)' 'ITE Power Delivery Driver'\
 
 	# Software & Utility
-	'ASUS System Control Interface V2' 'Nahimic Component Driver' 'Refreshrate Service'\
-)
+	'ASUS System Control Interface V2' 'Nahimic Component Driver' 'Refreshrate Service' 'Asus Multi Antenna Service'\
+	)
+
+UniWinPkgs=(
+	'NVIDIA Control Panel' 'Realtek Codec Console(Realtek Audio Driver Hardware Support App)' 'Sonic Studio 3 UWP' 'MyASUS UWP'\
+	)
 
 curl -Ls "https://rog.asus.com/support/webapi/product/GetPDDrivers?website=global&model=G531GV&pdid=10923&mode=&cpu=G531GT&osid=45&active=&LevelTagId=9180" | grep -E -- 'Title|FileSize|ReleaseD|Global|China' | sed 's/China.*//g; s/"//g; s/   *//g; s/,//g; s/Title/Driver Name/g; s/ReleaseDate/Released/g; s/Global/URL/g' > ./drivers.txt
 sed -i "1i Script Bashed Date: $(date +'%a %b %d %Y')\n" ./drivers.txt
@@ -21,3 +25,7 @@ for drivers in "${driversSupportPage[@]}"; do
 	grep -m1 "$drivers" -A3 ./drivers.txt
 	curl -LO --progress-bar "$(grep -m1 "$drivers" -A3 ./drivers.txt | sed '/^Driver/d; /^File/d; /^Released/d; s/URL: //g')"
 done
+
+curl -LO --progress-bar "$(curl -s "https://www.intel.co.uk/content/www/uk/en/support/detect.html" | grep -m1 'Download now' | sed 's/<a href=//; s/ class.*//; s/'\''//g; s/  *//')"
+
+sha256sum ./* > ./sha256sumDrivers.txt
