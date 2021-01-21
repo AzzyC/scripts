@@ -14,7 +14,7 @@ driversSupportPage=(
 	)
 
 UniWinPkgs=(
-	'NVIDIA Control Panel' 'Realtek Codec Console(Realtek Audio Driver Hardware Support App)' 'Sonic Studio 3 UWP' 'MyASUS UWP'\
+	'NVIDIA Control Panel' 'Realtek Codec Console(Realtek Audio Driver Hardware Support App)' 'Sonic Studio 3 UWP'\
 	)
 
 zipFolders=(
@@ -39,6 +39,15 @@ download () {
 }
 
 install () {
+	net session &> /dev/null
+	if [ $? -eq 0 ]; then
+		printf '%s\n' "" "Administrative Privileges: Active" ""
+	else
+		printf '%s\n' "" "User Privileges Only" "" "You are not an Administrator!" "Script unable to automate package installing"\
+		"Please right-click on 'git-bash' application and 'Run as administrator'" "" "Exiting.."
+		exit 0
+	fi
+
 	mkdir -p /c/DRIVERS/
 	cp ./* /c/DRIVERS/
 	cd /c/DRIVERS/
@@ -47,7 +56,20 @@ install () {
 	for zips in "${zipFolders[@]}"; do
 		zipName="$(ls ${zips}*.zip)"
 		folderName="$(printf $zipName | sed 's/.zip//')"
-		unzip "$zipName" -d "$folderName"
+		unzip -q "$zipName" -d "$folderName" && rm "$zipName"
+	done
+
+	read -a installer <<< "$(find $PWD -iname 'install*.bat' | tr -d '\n' | sed 's/bat/bat /g')"
+	for install in ${installer[@]}; do
+		printf '%s\n' "" "Installing: $(printf $install | sed 's/.*DRIVERS\///; s/\/.*bat//')"
+		"$install" &>/dev/null
+		printf '%s\n' "Done" ""
+	done
+
+	for exe in $PWD/*.exe; do
+		printf '%s\n' "Installing: $(printf $exe | sed 's/.*DRIVERS\///; s/.exe//')"
+		"$exe"
+		printf '%s\n' "Done" ""
 	done
 
 	cd "$currentDir"
