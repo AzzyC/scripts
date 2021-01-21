@@ -24,12 +24,14 @@ zipFolders=(
 currentDir="$PWD"
 
 download () {
-	curl -Ls "https://rog.asus.com/support/webapi/product/GetPDDrivers?website=global&model=G531GV&pdid=10923&mode=&cpu=G531GT&osid=45&active=&LevelTagId=9180" | grep -E -- 'Title|FileSize|ReleaseD|Global|China' | sed 's/China.*//g; s/"//g; s/   *//g; s/,//g; s/Title/Driver Name/g; s/ReleaseDate/Released/g; s/Global/URL/g' > ./drivers.txt
+	curl -Ls "https://rog.asus.com/support/webapi/product/GetPDDrivers?website=global&model=G531GV&pdid=10923&mode=&cpu=G531GT&osid=45&active=&LevelTagId=9180"\
+	| grep -E -- 'Version|Title|FileSize|ReleaseD|Global|China'\
+	| sed 's/China.*//g; s/"//g; s/   *//g; s/,//g; s/Title/Driver Name/g; s/ReleaseDate/Released/g; s/Global/URL/g' > ./drivers.txt
 	sed -i "1i Script Bashed Date: $(date +'%a %b %d %Y')\n" ./drivers.txt
 
 	for drivers in "${driversSupportPage[@]}"; do
 		printf '%s\n' ""
-		grep -m1 "$drivers" -A3 ./drivers.txt
+		grep -m1 "$drivers" -B1 -A3 ./drivers.txt
 		curl -LO --progress-bar "$(grep -m1 "$drivers" -A3 ./drivers.txt | sed '/^Driver/d; /^File/d; /^Released/d; s/URL: //g')"
 	done
 
