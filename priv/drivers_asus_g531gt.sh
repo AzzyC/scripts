@@ -35,47 +35,46 @@ download () {
 		curl -LO --progress-bar "$(grep -m1 "$drivers" -A3 ./drivers.txt | sed '/^Driver/d; /^File/d; /^Released/d; s/URL: //g')"
 	done
 
-	curl -LO --progress-bar "$(curl -s "https://www.intel.co.uk/content/www/uk/en/support/detect.html" | grep -m1 'Download now' | sed 's/<a href=//; s/ class.*//; s/'\''//g; s/  *//')"
+	curl -LO --progress-bar "$(curl -s "https://www.intel.co.uk/content/www/uk/en/support/detect.html"\
+	| grep -m1 'Download now'\
+	| sed 's/<a href=//; s/ class.*//; s/'\''//g; s/  *//')"
 
 	sha256sum ./* > ./sha256sumDrivers.txt
 }
 
 install () {
-	net session &> /dev/null
-	if [ $? -eq 0 ]; then
+	if net session &> /dev/null; then
 		printf '%s\n' "" "Administrative Privileges: Active" ""
 	else
-		printf '%s\n' "" "User Privileges Only" "" "You are not an Administrator!" "Script unable to automate package installing"\
-		"Please right-click on 'git-bash' application and 'Run as administrator'" "" "Exiting.."
+		printf '%s\n' "" "User Privileges Only" "" "Please right-click on 'git-bash' application and 'Run as administrator'" "" "Exiting.."
 		exit 0
 	fi
 
-	mkdir -p /c/DRIVERS/
-	cp ./* /c/DRIVERS/
-	cd /c/DRIVERS/
+	mkdir -p /c/DRIVERS/ && cd /c/DRIVERS/ || exit
+	cp "$currentDir"/* /c/DRIVERS/
 	sha256sum --check ./sha256sumDrivers.txt
 
 	for zips in "${zipFolders[@]}"; do
-		zipName="$(ls ${zips}*.zip)"
-		folderName="$(printf $zipName | sed 's/.zip//')"
+		zipName="$(ls "${zips}"*.zip)"
+		folderName="$(printf "$zipName" | sed 's/.zip//')"
 		unzip -q "$zipName" -d "$folderName" && rm "$zipName"
 	done
 
-	read -a installer <<< "$(find $PWD -iname 'install*.bat' | tr -d '\n' | sed 's/bat/bat /g')"
-	for install in ${installer[@]}; do
-		printf '%s\n' "" "Installing: $(printf $install | sed 's/.*DRIVERS\///; s/\/.*bat//')"
+	read -r -a installer <<< "$(find "$PWD" -iname 'install*.bat' | tr -d '\n' | sed 's/bat/bat /g')"
+	for install in "${installer[@]}"; do
+		printf '%s\n' "" "Installing: $(printf "$install" | sed 's/.*DRIVERS\///; s/\/.*bat//')"
 		"$install" &>/dev/null
 		printf '%s\n' "Done" ""
 	done
 
-	for exe in $PWD/*.exe; do
-		printf '%s\n' "Installing: $(printf $exe | sed 's/.*DRIVERS\///; s/.exe//')"
+	for exe in "$PWD"/*.exe; do
+		printf '%s\n' "Installing: $(printf "$exe" | sed 's/.*DRIVERS\///; s/.exe//')"
 		"$exe"
 		printf '%s\n' "Done" ""
 	done
 
-	cd "$currentDir"
+	cd "$currentDir" || exit
 }
 
-download
-install
+[[ "$*" =~ "download" ]] && download
+[[ "$*" =~ "install" ]] && install
