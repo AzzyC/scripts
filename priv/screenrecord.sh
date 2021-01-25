@@ -13,7 +13,7 @@ if [[ $? -eq 127 ]]; then
 	unzip /c/Users/"$(whoami)"/Documents/ffmpeg.zip -d /c/Users/"$(whoami)"/Documents
 	mv /c/Users/"$(whoami)"/Documents/ffmpeg/bin/* /c/Users/"$(whoami)"/Documents/ffmpeg
 	rm -rf /c/Users/"$(whoami)"/Documents/ffmpeg/doc /c/Users/"$(whoami)"/Documents/ffmpeg/bin
-	export PATH="/c/Users/"$(whoami)"/Documents/ffmpeg:$PATH"
+	export PATH="/c/Users/$(whoami)/Documents/ffmpeg:$PATH"
 fi
 
 if [[ ! -d /c/Users/"$(whoami)"/Desktop/ScreenRecord/ ]]; then
@@ -32,10 +32,10 @@ rec_end="$(date +'%a %d-%m-%Y %H.%M.%S')"
 printf '%s\n' "Recording Ended: $rec_end" ""
 
 mv /c/Users/"$(whoami)"/Desktop/ScreenRecord/streaming.mp4 /c/Users/"$(whoami)"/Desktop/ScreenRecord/"$rec_end".mp4
-printf '%s\n' "Recording Folder Size: $(du -h /c/Users/$(whoami)/Desktop/ScreenRecord | awk '{print $1}')B"
+printf '%s\n' "Recording Folder Size: $(du -h /c/Users/"$(whoami)"/Desktop/ScreenRecord | awk '{print $1}')B"
 
-if [[ -z "$(tasklist -v -nh -fi "imagename eq explorer.exe" | grep ScreenRecord)" ]]; then
-	explorer.exe \\Users\"$(whoami)\\Desktop\\ScreenRecord
+if ! tasklist -v -nh -fi "imagename eq explorer.exe" | grep -q ScreenRecord; then
+	explorer.exe \\Users\\"$(whoami)"\\Desktop\\ScreenRecord
 fi
 
-explorer.exe \\Users\"$(whoami)\\Desktop\\ScreenRecord\\"$rec_end".mp4
+explorer.exe \\Users\\"$(whoami)"\\Desktop\\ScreenRecord\\"$rec_end".mp4
