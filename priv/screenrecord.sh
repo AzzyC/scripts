@@ -27,7 +27,26 @@ else
 	time="02:15:00"
 fi
 
-printf '%s\n' "" "Current Max Recording Limit: $time" ""
+if [[ "$time" == *":"* ]]; then
+	H="$(printf "$time" | cut -d ':' -f1) Hour(s) "
+	M="$(printf "$time" | cut -d ':' -f2) Minute(s) "
+	S="$(printf "$time" | cut -d ':' -f3) Second(s)"
+
+	if [[ "$H" =~ "00" ]]; then
+		unset H
+	fi
+	if [[ "$M" =~ "00" ]]; then
+		unset M
+	fi
+	if [[ "$S" =~ "00" ]]; then
+		unset S
+	fi
+
+else
+	S="$time Second(s)"
+fi
+
+printf '%s\n' "" "Current Max Recording Limit: ${H}${M}${S}" ""
 
 printf '%s\n' "Recording Started: $(date +'%d-%m-%Y %H:%M:%S')" ""
 ffmpeg -loglevel warning -stats -guess_layout_max 0 -rtbufsize 200M -f dshow -framerate 30 -i video="screen-capture-recorder":audio="virtual-audio-capturer" -t "$time" -c:v libx264 -vsync 2 -r 30 -preset fast -tune zerolatency -crf 30 -pix_fmt yuv420p -movflags +faststart -c:a aac -ac 2 -b:a 128k -y /c/Users/"$(whoami)"/Desktop/ScreenRecord/streaming.mp4
