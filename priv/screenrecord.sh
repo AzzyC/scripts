@@ -21,10 +21,16 @@ if [[ ! -d /c/Users/"$(whoami)"/Desktop/ScreenRecord/ ]]; then
 	printf '%s\n' "All of your recordings will be stored in your Desktop, within 'ScreenRecord'"
 fi
 
-printf '%s\n' "" "Current Max Recording Limit: $(grep audio "${BASH_SOURCE[0]}" | awk '{print $16}')" ""
+if [ -n "$1" ]; then
+	time="$1"
+else
+	time="02:15:00"
+fi
+
+printf '%s\n' "" "Current Max Recording Limit: $time" ""
 
 printf '%s\n' "Recording Started: $(date +'%d-%m-%Y %H:%M:%S')" ""
-ffmpeg -loglevel warning -stats -guess_layout_max 0 -rtbufsize 200M -f dshow -framerate 30 -i video="screen-capture-recorder":audio="virtual-audio-capturer" -t 02:30:00 -c:v libx264 -vsync 2 -r 30 -preset fast -tune zerolatency -crf 30 -pix_fmt yuv420p -movflags +faststart -c:a aac -ac 2 -b:a 128k -y /c/Users/"$(whoami)"/Desktop/ScreenRecord/streaming.mp4
+ffmpeg -loglevel warning -stats -guess_layout_max 0 -rtbufsize 200M -f dshow -framerate 30 -i video="screen-capture-recorder":audio="virtual-audio-capturer" -t "$time" -c:v libx264 -vsync 2 -r 30 -preset fast -tune zerolatency -crf 30 -pix_fmt yuv420p -movflags +faststart -c:a aac -ac 2 -b:a 128k -y /c/Users/"$(whoami)"/Desktop/ScreenRecord/streaming.mp4
 printf '%s\n' "" "Recording Duration: $(ffprobe -v quiet -print_format compact=print_section=0:nokey=1:escape=csv -show_entries format=duration -sexagesimal /c/Users/"$(whoami)"/Desktop/ScreenRecord/streaming.mp4)" ""
 
 rec_end="$(date +'%a %d-%m-%Y %H.%M.%S')"
