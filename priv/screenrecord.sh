@@ -52,15 +52,16 @@ printf '%s\n' "Recording Started: $(date +'%d-%m-%Y %H:%M:%S')" ""
 ffmpeg -loglevel warning -stats -guess_layout_max 0 -rtbufsize 200M -f dshow -framerate 30 -i video="screen-capture-recorder":audio="virtual-audio-capturer" -t "$time" -c:v libx264 -vsync 2 -r 30 -preset fast -tune zerolatency -crf 30 -pix_fmt yuv420p -movflags +faststart -c:a aac -ac 2 -b:a 128k -y /c/Users/"$(whoami)"/Desktop/ScreenRecord/streaming.mp4
 printf '%s\n' "" "Recording Duration: $(ffprobe -v quiet -print_format compact=print_section=0:nokey=1:escape=csv -show_entries format=duration -sexagesimal /c/Users/"$(whoami)"/Desktop/ScreenRecord/streaming.mp4)" ""
 
-rec_end="$(date +'%a %d-%m-%Y %H.%M.%S')"
+rec_end="$(date +'%a %d-%m-%Y %H:%M:%S')"
+file_rec_end="$(echo $rec_end | sed 's/:/-/g')"
 
 printf '%s\n' "Recording Ended: $rec_end" ""
 
-mv /c/Users/"$(whoami)"/Desktop/ScreenRecord/streaming.mp4 /c/Users/"$(whoami)"/Desktop/ScreenRecord/"$rec_end".mp4
+mv /c/Users/"$(whoami)"/Desktop/ScreenRecord/streaming.mp4 /c/Users/"$(whoami)"/Desktop/ScreenRecord/"$file_rec_end".mp4
 printf '%s\n' "Recording Folder Size: $(du -h /c/Users/"$(whoami)"/Desktop/ScreenRecord | awk '{print $1}')B"
 
 if ! tasklist -v -nh -fi "imagename eq explorer.exe" | grep -q ScreenRecord; then
 	explorer.exe \\Users\\"$(whoami)"\\Desktop\\ScreenRecord
 fi
 
-explorer.exe \\Users\\"$(whoami)"\\Desktop\\ScreenRecord\\"$rec_end".mp4
+explorer.exe \\Users\\"$(whoami)"\\Desktop\\ScreenRecord\\"$file_rec_end".mp4
