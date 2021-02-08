@@ -8,39 +8,74 @@ yellow="\u001b[33;1m"
 
 reset="\u001b[0m"
 
-if [[ ! -d "/c/Program Files (x86)/Screen Capturer Recorder/" ]]; then
-	printf "\n${yellow}Screen Capture Recorder is not installed\n${green}Downloading latest GitHub release..\n"
-	curl -L --progress-bar "$(curl -s https://github.com/rdp/screen-capture-recorder-to-video-windows-free/releases\
-								| grep -m1 exe\
-								| awk '{print $2}'\
-								| sed 's/href="/https:\/\/github.com/;s/"//')"\
-								> /c/Users/"$(whoami)"/Downloads/Setup.Screen.Capturer.Recorder.exe
-	printf "$white"
-	/c/Users/"$(whoami)"/Downloads/Setup.Screen.Capturer.Recorder.exe
-	rm -rf "/c/ProgramData/Microsoft/Windows/Start Menu/Programs/Screen Capturer Recorder/"
+user="$(id -un)"
+
+su () {
+	if ! net session &> /dev/null; then
+		printf "\n${red}User Privileges Only\nWill not be able to install required programs\n\
+		\rPlease right-click on 'git-bash' application and 'Run as administrator'\n\nNo actions were done!\nExiting..\n"
+		exit 0
+	fi
+}
+
+ffmpegcheck () {
+	if [[ $? -eq 127 ]]; then
+		ffmpegver="ffmpeg-n4.3.1-221-gd08bcbffff-win64-gpl-4.3"
+
+		printf "\n${yellow}ffmpeg is not installed\n${green}Downloading latest GitHub release..\n"
+		curl -L --progress-bar "$(curl -s https://github.com/BtbN/FFmpeg-Builds/releases\
+									| grep -m 1 "$ffmpegver"\
+									| awk '{print $2}'\
+									| sed 's/href="/https:\/\/github.com/; s/"//')"\
+									> /c/Users/"$user"/Documents/ffmpeg.zip
+		printf "$white"
+		unzip /c/Users/"$user"/Documents/ffmpeg.zip -d /c/Users/"$user"/Documents
+		mv /c/Users/"$user"/Documents/"$ffmpegver" /c/Users/"$user"/Documents/ffmpeg
+		mv /c/Users/"$user"/Documents/ffmpeg/bin/* /c/Users/"$user"/Documents/ffmpeg
+		rm -rf /c/Users/"$user"/Documents/ffmpeg/doc /c/Users/"$user"/Documents/ffmpeg/bin
+		export PATH="/c/Users/$user/Documents/ffmpeg:$PATH"
+	fi
+}
+
+if [[ ! -d /c/Users/"$user"/Documents/ScreenRecordLibs/ ]]; then
+	mkdir -p /c/Users/"$user"/Documents/ScreenRecordLibs/
+	printf "\n${white}Libs required for Screen Recording will be stored in /c/Users/$user/Documents/ScreenRecordLibs\n"
 fi
 
-ffmpeg -loglevel quiet &>/dev/null
-if [[ $? -eq 127 ]]; then
-	ffmpegver="ffmpeg-n4.3.1-221-gd08bcbffff-win64-gpl-4.3"
-
-	printf "\n${yellow}ffmpeg is not installed\n${green}Downloading latest GitHub release..\n"
-	curl -L --progress-bar "$(curl -s https://github.com/BtbN/FFmpeg-Builds/releases\
-								| grep -m 1 "$ffmpegver"\
-								| awk '{print $2}'\
-								| sed 's/href="/https:\/\/github.com/; s/"//')"\
-								> /c/Users/"$(whoami)"/Documents/ffmpeg.zip
-	printf "$white"
-	unzip /c/Users/"$(whoami)"/Documents/ffmpeg.zip -d /c/Users/"$(whoami)"/Documents
-	mv /c/Users/"$(whoami)"/Documents/"$ffmpegver" /c/Users/"$(whoami)"/Documents/ffmpeg
-	mv /c/Users/"$(whoami)"/Documents/ffmpeg/bin/* /c/Users/"$(whoami)"/Documents/ffmpeg
-	rm -rf /c/Users/"$(whoami)"/Documents/ffmpeg/doc /c/Users/"$(whoami)"/Documents/ffmpeg/bin
-	export PATH="/c/Users/$(whoami)/Documents/ffmpeg:$PATH"
+if [[ -z "$(ffmpeg -hide_banner -list_devices true -f dshow -i dummy 2> >(grep screen-capture))" ]]; then
+	ffmpegcheck
+	printf "\n${yellow}screen-capture-recorder lib is not installed\n${green}Downloading latest..\n"
+	su
+	curl -L --progress-bar "https://github.com/ShareX/ShareX/blob/master/Lib/screen-capture-recorder-x64.dll?raw=true"\
+	> /c/Users/"$user"/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
+	regsvr32 /c/Users/"$user"/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
 fi
 
-if [[ ! -d /c/Users/"$(whoami)"/Desktop/ScreenRecord/ ]]; then
-	mkdir -p /c/Users/"$(whoami)"/Desktop/ScreenRecord/
-	printf "\n${white}All of your recordings will be stored in your Desktop, within 'ScreenRecord'\n"
+if [[ -z "$(ffmpeg -hide_banner -list_devices true -f dshow -i dummy 2> >(grep virtual-audio))" ]]; then
+	ffmpegcheck
+	su
+	printf "\n${yellow}virtual-audio-capturer lib is not installed\n${green}Downloading latest..\n"
+	curl -L --progress-bar "https://github.com/ShareX/ShareX/blob/master/Lib/virtual-audio-capturer-x64.dll?raw=true"\
+	> /c/Users/"$user"/Documents/ScreenRecordLibs/virtual-audio-capturer-x64.dll
+	regsvr32 /c/Users/"$user"/Documents/ScreenRecordLibs/virtual-audio-capturer-x64.dll
+fi
+
+if [[ ! -e /c/Users/"$user"/Documents/ScreenRecordLibs/uninstalllibs.sh ]]; then
+	touch /c/Users/"$user"/Documents/ScreenRecordLibs/uninstalllibs.sh
+	printf '#!/bin/bash\n#bash /c/Users/"$user"/Documents/ScreenRecordLibs/uninstalllibs.sh - To remove Screen Recorder libs and from registry
+# Need a d m i n, otherwise will n o t uninstalll p r o p e r l y!
+
+regsvr32 -u /c/Users/"$user"/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
+regsvr32 -u /c/Users/"$user"/Documents/ScreenRecordLibs/virtual-audio-capturer-x64.dll
+rm -rf /c/Users/"$user"/Documents/ScreenRecordLibs/
+'\
+	> /c/Users/"$user"/Documents/ScreenRecordLibs/uninstalllibs.sh
+	chmod +x /c/Users/"$user"/Documents/ScreenRecordLibs/uninstalllibs.sh
+fi
+
+if [[ ! -d /c/Users/"$user"/Desktop/ScreenRecord/ ]]; then
+	mkdir -p /c/Users/"$user"/Desktop/ScreenRecord/
+	printf "\n${white}All recordings will be stored in /c/Users/$user/Desktop/ScreenRecord\n"
 fi
 
 if [ -n "$1" ]; then
@@ -71,20 +106,20 @@ fi
 printf "\n${yellow}Current Max Recording Limit:${white} ${H}${M}${S}\n"
 
 printf "\n${green}Recording Started:${white} $(date +'%d-%m-%Y %H:%M:%S')\n\n${cyan}"
-ffmpeg -loglevel warning -stats -guess_layout_max 0 -rtbufsize 200M -f dshow -framerate 30 -i video="screen-capture-recorder":audio="virtual-audio-capturer" -t "$time" -c:v libx264 -vsync 2 -r 30 -preset fast -tune zerolatency -crf 30 -pix_fmt yuv420p -movflags +faststart -c:a aac -ac 2 -b:a 128k -y /c/Users/"$(whoami)"/Desktop/ScreenRecord/streaming.mp4
+ffmpeg -loglevel warning -stats -guess_layout_max 0 -rtbufsize 200M -f dshow -framerate 30 -i video="screen-capture-recorder":audio="virtual-audio-capturer" -t "$time" -c:v libx264 -vsync 2 -r 30 -preset fast -tune zerolatency -crf 30 -pix_fmt yuv420p -movflags +faststart -c:a aac -ac 2 -b:a 128k -y /c/Users/"$user"/Desktop/ScreenRecord/streaming.mp4
 
 rec_end="$(date +'%a %d-%m-%Y %H:%M:%S')"
 file_rec_end="$(echo $rec_end | sed 's/:/-/g')"
 
 printf "\n${red}Recording Ended:${white} $rec_end\n"
 
-printf "\n${yellow}Recording Duration:${white} $(ffprobe -v quiet -print_format compact=print_section=0:nokey=1:escape=csv -show_entries format=duration -sexagesimal /c/Users/"$(whoami)"/Desktop/ScreenRecord/streaming.mp4)\n"
+printf "\n${yellow}Recording Duration:${white} $(ffprobe -v quiet -print_format compact=print_section=0:nokey=1:escape=csv -show_entries format=duration -sexagesimal /c/Users/"$user"/Desktop/ScreenRecord/streaming.mp4)\n"
 
-mv /c/Users/"$(whoami)"/Desktop/ScreenRecord/streaming.mp4 /c/Users/"$(whoami)"/Desktop/ScreenRecord/"$file_rec_end".mp4
-printf "\n${yellow}Recording Folder Size:${white} $(du -h /c/Users/"$(whoami)"/Desktop/ScreenRecord | awk '{print $1}')B\n ${reset}"
+mv /c/Users/"$user"/Desktop/ScreenRecord/streaming.mp4 /c/Users/"$user"/Desktop/ScreenRecord/"$file_rec_end".mp4
+printf "\n${yellow}Recording Folder Size:${white} $(du -h /c/Users/"$user"/Desktop/ScreenRecord | awk '{print $1}')B\n ${reset}"
 
 if ! tasklist -v -nh -fi "imagename eq explorer.exe" | grep -q ScreenRecord; then
-	explorer.exe \\Users\\"$(whoami)"\\Desktop\\ScreenRecord
+	explorer.exe \\Users\\"$user"\\Desktop\\ScreenRecord
 fi
 
-explorer.exe \\Users\\"$(whoami)"\\Desktop\\ScreenRecord\\"$file_rec_end".mp4
+explorer.exe \\Users\\"$user"\\Desktop\\ScreenRecord\\"$file_rec_end".mp4
