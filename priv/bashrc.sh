@@ -7,10 +7,17 @@ white="\u001b[37;1m"
 yellow="\u001b[33;1m"
 reset="\u001b[0m"
 
+user="$(id -un)"
+
 alias fetch='bash <<< "$(curl -s https://raw.githubusercontent.com/dylanaraps/neofetch/master/neofetch)"'
+alias clear='clear -x'
+alias desk='explorer.exe \\Users\\"$user"\\Desktop'
+alias doc='explorer.exe \\Users\\"$user"\\Documents'
+alias down='explorer.exe \\Users\\"$user"\\Downloads'
 alias hades='bash <<< "$(curl -s https://del.dog/raw/hadesqissues)"'
-alias pray='bash /c/Users/$(whoami)/Documents/scripts/priv/masjidtime.sh'
-alias rec='bash /c/Users/$(whoami)/Documents/scripts/priv/screenrecord.sh'
+alias pray='bash /c/Users/$user/Documents/scripts/priv/masjidtime.sh'
+alias rec='bash /c/Users/$user/Documents/scripts/priv/screenrecord.sh'
+alias user='explorer.exe \\Users\\"$user"'
 
 crop () {
 	ffmpegcheck
@@ -22,9 +29,10 @@ crop () {
 	read -r -p "Name of cropped video: " outputfile
 	printf "\n${cyan}"
 
-	mkdir -p /c/Users/"$(whoami)"/Desktop/ScreenRecord/
-	ffmpeg -loglevel warning -stats -i "$inputfile" -ss "$begin" -to "$end" -c:v libx264 -vsync 2 -y /c/Users/"$(whoami)"/Desktop/ScreenRecord/"$outputfile".mp4
-	printf "\n${yellow}File saved: /c/Users/$(whoami)/Desktop/ScreenRecord/${outputfile}.mp4${reset}\n"
+	mkdir -p /c/Users/"$user"/Desktop/ScreenRecord/
+	ffmpeg -loglevel warning -stats -i "$inputfile" -ss "$begin" -to "$end" -c:v libx264 -vsync 2 -y /c/Users/"$user"/Desktop/ScreenRecord/"$outputfile".mp4
+	printf "\n${yellow}File saved: /c/Users/$user/Desktop/ScreenRecord/${outputfile}.mp4${reset}\n"
+	explorer.exe \\Users\\"$user"\\Desktop\\ScreenRecord\\"$outputfile".mp4
 }
 
 ffmpegcheck () {
@@ -37,15 +45,17 @@ ffmpegcheck () {
 									| grep -m 1 "$ffmpegver"\
 									| awk '{print $2}'\
 									| sed 's/href="/https:\/\/github.com/; s/"//')"\
-									> /c/Users/"$(whoami)"/Documents/ffmpeg.zip
+									> /c/Users/"$user"/Documents/ffmpeg.zip
 		printf "$white"
-		unzip /c/Users/"$(whoami)"/Documents/ffmpeg.zip -d /c/Users/"$(whoami)"/Documents
-		mv /c/Users/"$(whoami)"/Documents/"$ffmpegver" /c/Users/"$(whoami)"/Documents/ffmpeg
-		mv /c/Users/"$(whoami)"/Documents/ffmpeg/bin/* /c/Users/"$(whoami)"/Documents/ffmpeg
-		rm -rf /c/Users/"$(whoami)"/Documents/ffmpeg/doc /c/Users/"$(whoami)"/Documents/ffmpeg/bin
-		export PATH="/c/Users/$(whoami)/Documents/ffmpeg:$PATH"
+		unzip /c/Users/"$user"/Documents/ffmpeg.zip -d /c/Users/"$user"/Documents
+		mv /c/Users/"$user"/Documents/"$ffmpegver" /c/Users/"$user"/Documents/ffmpeg
+		mv /c/Users/"$user"/Documents/ffmpeg/bin/* /c/Users/"$user"/Documents/ffmpeg
+		rm -rf /c/Users/"$user"/Documents/ffmpeg/doc /c/Users/"$user"/Documents/ffmpeg/bin
+		export PATH="/c/Users/$user/Documents/ffmpeg:$PATH"
 	fi
 }
+
+PS1='\[\033]0;$PWD\007\]\n\[\033[0;92m\]\u \[\033[0;95m\]\w \[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\]\n\$ '
 
 src () {
 	source /etc/bash.bashrc
@@ -58,11 +68,11 @@ ss () {
 	inputfile="$(printf "$1" | sed 's/'\''//g')"
 	read -r -p "Video timestamps to be screenshotted [HH:MM:SS] [00:00:00]: " -a stamps
 	printf "\n${cyan}"
-	mkdir -p /c/Users/"$(whoami)"/Desktop/ScreenRecord/
+	mkdir -p /c/Users/"$user"/Desktop/ScreenRecord/
 
 	i=1
 	for stamp in "${stamps[@]}"; do
-	ffmpeg -loglevel quiet -stats -ss "$stamp" -i "$inputfile" -vframes 1 -q:v 1 -y /c/Users/"$(whoami)"/Desktop/ScreenRecord/"$i".png
+	ffmpeg -loglevel quiet -stats -ss "$stamp" -i "$inputfile" -vframes 1 -q:v 1 -y /c/Users/"$user"/Desktop/ScreenRecord/"$i".png
 	i="$((i+1))"
 	done
 
