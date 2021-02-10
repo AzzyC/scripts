@@ -7,7 +7,7 @@ white="\u001b[37;1m"
 yellow="\u001b[33;1m"
 
 if [[ "$OS" != *Windows* ]]; then
-	echo -e "\n${red}This script only works on Windows\!"
+	echo -e "\n${red}This script only works on Windows\e\!"
 	exit 1
 fi
 
@@ -33,6 +33,7 @@ ffmpegcheck () {
 									> /c/Users/"$user"/Documents/temp.zip
 		unzip -q /c/Users/"$user"/Documents/temp.zip -d /c/Users/"$user"/Documents/ && rm /c/Users/"$user"/Documents/temp.zip
 		mv /c/Users/"$user"/Documents/ffmpeg-*/bin /c/Users/"$user"/Documents/ffmpeg && rm -rf /c/Users/"$user"/Documents/ffmpeg-*/
+		reg add "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" -v "C:\Users\\${user}\Documents\ffmpeg\ffmpeg.exe" -t REG_SZ -d HIGHDPIAWARE -f 1> /dev/null
 	fi
 }
 
@@ -132,7 +133,7 @@ ${yellow}Recording Folder Size:${white} $(du -h /c/Users/"$user"/Desktop/ScreenR
 mv /c/Users/"$user"/Desktop/ScreenRecord/streaming.mp4 /c/Users/"$user"/Desktop/ScreenRecord/"$file_rec_end".mp4
 
 if ! tasklist -v -nh -fi "imagename eq explorer.exe" | grep -q ScreenRecord; then
-	explorer.exe \\Users\\"$user"\\Desktop\\ScreenRecord
+	explorer \\Users\\"$user"\\Desktop\\ScreenRecord
 fi
 
-explorer.exe \\Users\\"$user"\\Desktop\\ScreenRecord\\"$file_rec_end".mp4
+explorer \\Users\\"$user"\\Desktop\\ScreenRecord\\"$file_rec_end".mp4
