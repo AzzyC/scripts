@@ -8,6 +8,13 @@ yellow="\u001b[33;1m"
 reset="\u001b[0m"
 
 user="$(id -un)"
+PATH="/c/Users/$user/Documents/ffmpeg:$PATH"
+
+if ! net session &> /dev/null; then
+	PS1='\[\033]0;$PWD\007\]\n\[\033[0;92m\]azzy \[\033[0;95m\]\w \[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\]\n\$ '
+else
+	PS1='\[\033]0;$PWD\007\]\n\[\033[0;31m\](Admin) \[\033[0;92m\]azzy \[\033[0;95m\]\w \[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\]\n\$ '
+fi
 
 alias fetch='bash <<< "$(curl -s https://raw.githubusercontent.com/dylanaraps/neofetch/master/neofetch)"'
 alias clear='clear -x'
@@ -36,26 +43,19 @@ crop () {
 }
 
 ffmpegcheck () {
-	ffmpeg -loglevel quiet &>/dev/null
+	ffmpeg -loglevel quiet 2> /dev/null
 	if [[ $? -eq 127 ]]; then
-		ffmpegver="ffmpeg-n4.3.1-221-gd08bcbffff-win64-gpl-4.3"
-
-		printf "\n${yellow}ffmpeg is not installed\n${green}Downloading latest GitHub release..\n"
-		curl -L --progress-bar "$(curl -s https://github.com/BtbN/FFmpeg-Builds/releases\
-									| grep -m 1 "$ffmpegver"\
+		echo -e "\n${yellow}ffmpeg is not installed\n${green}Downloading latest.."
+		curl -L --progress-bar "$(curl -s https://github.com/GyanD/codexffmpeg/releases\
+									| grep -m 1 'essentials.*zip'\
 									| awk '{print $2}'\
 									| sed 's/href="/https:\/\/github.com/; s/"//')"\
-									> /c/Users/"$user"/Documents/ffmpeg.zip
-		printf "$white"
-		unzip /c/Users/"$user"/Documents/ffmpeg.zip -d /c/Users/"$user"/Documents
-		mv /c/Users/"$user"/Documents/"$ffmpegver" /c/Users/"$user"/Documents/ffmpeg
-		mv /c/Users/"$user"/Documents/ffmpeg/bin/* /c/Users/"$user"/Documents/ffmpeg
-		rm -rf /c/Users/"$user"/Documents/ffmpeg/doc /c/Users/"$user"/Documents/ffmpeg/bin
-		export PATH="/c/Users/$user/Documents/ffmpeg:$PATH"
+									> /c/Users/"$user"/Documents/temp.zip
+		unzip -q /c/Users/"$user"/Documents/temp.zip -d /c/Users/"$user"/Documents/ && rm /c/Users/"$user"/Documents/temp.zip
+		mv /c/Users/"$user"/Documents/ffmpeg-*/bin /c/Users/"$user"/Documents/ffmpeg && rm -rf /c/Users/"$user"/Documents/ffmpeg-*/
+		reg add "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" -v "C:\Users\\${user}\Documents\ffmpeg\ffmpeg.exe" -t REG_SZ -d HIGHDPIAWARE -f 1> /dev/null
 	fi
 }
-
-PS1='\[\033]0;$PWD\007\]\n\[\033[0;92m\]\u \[\033[0;95m\]\w \[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\]\n\$ '
 
 src () {
 	source /etc/bash.bashrc
@@ -77,14 +77,6 @@ ss () {
 	done
 
 	printf "${reset}"
-}
-
-su () {
-	if net session &> /dev/null; then
-		printf "\n${green}Administrative Privileges${reset}\n"
-	else
-		printf "\n${red}User Privileges${reset}\n"
-	fi
 }
 
 ytaudio () {
