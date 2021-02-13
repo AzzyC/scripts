@@ -13,12 +13,22 @@ fi
 
 user="$(id -un)"
 PATH="/c/Users/$user/Documents/ffmpeg:$PATH"
+linuxbashdir="$(cd / && pwd -W | sed 's/C:/\/c/')"
+winbashdir="$(cd / && pwd -W | sed 's/\//\\/g')"
 
 su () {
 	if ! net session &> /dev/null; then
 		echo -e "\n${red}User Privileges Only\nWill not be able to install required programs\n\
-		\rPlease right-click on 'git-bash' application and 'Run as administrator'\n\nNo actions taken\e\!\nExiting.."
+		\rPlease bash script again in the new terminal window, which has Administrator Privileges\n\nNo actions taken\e\!\nExiting.."
+		cp -n "$linuxbashdir"/git-bash.exe "$linuxbashdir"/git-bash-admin.exe
+		reg add "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" -v "$winbashdir\git-bash-admin.exe" -t REG_SZ -d RUNASADMIN -f 1> /dev/null
+		sleep 3
+		if ! schtasks -run -i -tn "git-bash-admin" &> /dev/null; then
+			explorer "$winbashdir"\\git-bash-admin.exe
+		fi
 		exit 1
+	else
+		schtasks -create -tn "git-bash-admin" -sc ONCE -st 01:09 -tr "$winbashdir\git-bash-admin.exe" -f -rl HIGHEST &> /dev/null
 	fi
 }
 
@@ -71,8 +81,16 @@ if [[ ! -e /c/Users/"$user"/Documents/ScreenRecordLibs/uninstalllibs.sh ]]; then
 
 if ! net session &> /dev/null; then
 	echo -e \"\n\u001b[31;1mUser Privileges Only\nWill not be able to unregister libraries\n
-	\rPlease right-click on 'git-bash' application and 'Run as administrator'\n\nNo actions taken!\nExiting..\"
+	\rPlease bash script again in the new terminal window, which has Administrator Privileges\n\nNo actions taken!\nExiting..\"
+	cp -n "$linuxbashdir"/git-bash.exe "$linuxbashdir"/git-bash-admin.exe
+	reg add \"HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\" -v \""$winbashdir"\git-bash-admin.exe\" -t REG_SZ -d RUNASADMIN -f 1> /dev/null
+	sleep 3
+	if ! schtasks -run -i -tn \"git-bash-admin\" &> /dev/null; then
+		explorer $(cd / && pwd -W | sed 's/\//\\/g; s/\\/\\\\/g; s/C://')\\\\git-bash-admin.exe
+	fi
 	exit 1
+else
+	schtasks -create -tn \"git-bash-admin\" -sc ONCE -st 01:09 -tr \"$winbashdir\\git-bash-admin.exe\" -f -rl HIGHEST &> /dev/null
 fi
 
 regsvr32 -u /c/Users/"$user"/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
