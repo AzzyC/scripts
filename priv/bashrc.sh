@@ -9,11 +9,15 @@ reset="\u001b[0m"
 
 user="$(id -un)"
 PATH="/c/Users/$user/Documents/ffmpeg:$PATH"
+linuxbashdir="$(cd / && pwd -W | sed 's/C:/\/c/')"
+winbashdir="$(cd / && pwd -W | sed 's/\//\\/g')"
 
 if ! net session &> /dev/null; then
 	PS1='\[\033]0;$PWD\007\]\n\[\033[0;92m\]azzy \[\033[0;95m\]\w \[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\]\n\$ '
 else
-	PS1='\[\033]0;$PWD\007\]\n\[\033[0;31m\](Admin) \[\033[0;92m\]azzy \[\033[0;95m\]\w \[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\]\n\$ '
+	PS1='\[\033]0;admin: $PWD\007\]\n\[\033[0;31m\](Admin) \[\033[0;92m\]azzy \[\033[0;95m\]\w \[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\]\n\$ '
+	cd /
+	schtasks -create -tn "git-bash-admin" -sc ONCE -st 01:09 -tr "$winbashdir\git-bash-admin.exe" -f -rl HIGHEST &> /dev/null
 fi
 
 alias fetch='bash <<< "$(curl -s https://raw.githubusercontent.com/dylanaraps/neofetch/master/neofetch)"'
@@ -25,6 +29,14 @@ alias hades='bash <<< "$(curl -s https://del.dog/raw/hadesqissues)"'
 alias pray='bash /c/Users/$user/Documents/scripts/priv/masjidtime.sh'
 alias rec='bash /c/Users/$user/Documents/scripts/priv/screenrecord.sh'
 alias user='explorer.exe \\Users\\"$user"'
+
+admin () {
+	cp -n "$linuxbashdir"/git-bash.exe "$linuxbashdir"/git-bash-admin.exe
+	reg add "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" -v "$winbashdir\git-bash-admin.exe" -t REG_SZ -d RUNASADMIN -f 1> /dev/null
+	if ! schtasks -run -i -tn "git-bash-admin" &> /dev/null; then
+		explorer "$winbashdir"\\git-bash-admin.exe
+	fi
+}
 
 crop () {
 	ffmpegcheck
