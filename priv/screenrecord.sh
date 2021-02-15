@@ -113,9 +113,9 @@ else
 fi
 
 if [[ "$time" == *":"* ]]; then
-	H="$(echo -n "$time" | cut -d ':' -f1) Hour(s) "
-	M="$(echo -n "$time" | cut -d ':' -f2) Minute(s) "
-	S="$(echo -n "$time" | cut -d ':' -f3) Second(s)"
+	H="$(cut -d ':' -f1 <<< "$time") Hour(s) "
+	M="$(cut -d ':' -f2 <<< "$time") Minute(s) "
+	S="$(cut -d ':' -f3 <<< "$time") Second(s)"
 
 	if [[ "$H" =~ "00" ]]; then
 		unset H
@@ -137,7 +137,7 @@ ${green}Script Started:${white} $(date +'%d-%m-%Y %H:%M:%S')\n\n${cyan}"
 ffmpeg -loglevel warning -stats -guess_layout_max 0 -rtbufsize 200M -f dshow -framerate 30 -i video="screen-capture-recorder":audio="virtual-audio-capturer" -t "$time" -c:v libx264 -vsync 2 -r 30 -preset fast -tune zerolatency -crf 30 -pix_fmt yuv420p -movflags +faststart -c:a aac -ac 2 -b:a 128k -y /c/Users/"$user"/Desktop/ScreenRecord/streaming.mp4
 
 rec_end="$(date +'%a %d-%m-%Y %H:%M:%S')"
-file_rec_end="$(echo -n "$rec_end" | sed 's/:/-/g')"
+file_rec_end="$(sed 's/:/-/g' <<< "$rec_end")"
 
 echo -e "\n${red}Recording Ended:${white} $rec_end\n\n\
 \
