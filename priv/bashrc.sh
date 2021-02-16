@@ -5,7 +5,6 @@ green="\u001b[32;1m"
 red="\u001b[31;1m"
 white="\u001b[37;1m"
 yellow="\u001b[33;1m"
-reset="\u001b[0m"
 
 user="$(id -un)"
 PATH="/c/Users/$user/Documents/ffmpeg:$PATH"
@@ -15,16 +14,17 @@ winbashdir="$(cd / && pwd -W | sed 's/\//\\/g')"
 if ! net session &> /dev/null; then
 	PS1='\[\033]0;$PWD\007\]\n\[\033[0;92m\]azzy \[\033[0;95m\]\w \[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\]\n\$ '
 else
-	PS1='\[\033]0;admin: $PWD\007\]\n\[\033[0;31m\](Admin) \[\033[0;92m\]azzy \[\033[0;95m\]\w \[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\]\n\$ '
+	PS1='\[\033]0;admin: $PWD\007\]\n\[\033[0;31m\]admin@\[\033[0;92m\]azzy \[\033[0;95m\]\w \[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\]\n\$ '
 	cd /
 	schtasks -create -tn "git-bash-admin" -sc ONCE -st 01:09 -tr "$winbashdir\git-bash-admin.exe" -f -rl HIGHEST &> /dev/null
 fi
 
-alias fetch='bash <<< "$(curl -s https://raw.githubusercontent.com/dylanaraps/neofetch/master/neofetch)"'
 alias clear='clear -x'
 alias desk='explorer.exe \\Users\\"$user"\\Desktop'
+alias diff='git diff --color=always 2>&1 | sed "/^warning: /d; /^The file/d"'
 alias doc='explorer.exe \\Users\\"$user"\\Documents'
 alias down='explorer.exe \\Users\\"$user"\\Downloads'
+alias fetch='bash <<< "$(curl -s https://raw.githubusercontent.com/dylanaraps/neofetch/master/neofetch)"'
 alias hades='bash <<< "$(curl -s https://del.dog/raw/hadesqissues)"'
 alias pray='bash /c/Users/$user/Documents/scripts/priv/masjidtime.sh'
 alias rec='bash /c/Users/$user/Documents/scripts/priv/screenrecord.sh'
@@ -50,7 +50,7 @@ crop () {
 
 	mkdir -p /c/Users/"$user"/Desktop/ScreenRecord/
 	ffmpeg -loglevel warning -stats -i "$inputfile" -ss "$begin" -to "$end" -c:v libx264 -vsync 2 -y /c/Users/"$user"/Desktop/ScreenRecord/"$outputfile".mp4
-	printf "\n${yellow}File saved: /c/Users/$user/Desktop/ScreenRecord/${outputfile}.mp4${reset}\n"
+	printf "\n${yellow}File saved: /c/Users/$user/Desktop/ScreenRecord/${outputfile}.mp4\n"
 	explorer.exe \\Users\\"$user"\\Desktop\\ScreenRecord\\"$outputfile".mp4
 }
 
@@ -69,9 +69,13 @@ ffmpegcheck () {
 	fi
 }
 
+history () {
+	builtin history -w /dev/stdout | cat -$1 2> /dev/null
+}
+
 src () {
 	source /etc/bash.bashrc
-	printf "\n${yellow}b${cyan}a${yellow}s${red}h${white}rc ${cyan}s${yellow}o${green}u${red}r${white}c${yellow}e${cyan}d!${reset}\n"
+	printf "\n${yellow}b${cyan}a${yellow}s${red}h${white}rc ${cyan}s${yellow}o${green}u${red}r${white}c${yellow}e${cyan}d!\n"
 }
 
 ss () {
@@ -87,12 +91,11 @@ ss () {
 	ffmpeg -loglevel quiet -stats -ss "$stamp" -i "$inputfile" -vframes 1 -q:v 1 -y /c/Users/"$user"/Desktop/ScreenRecord/"$i".png
 	i="$((i+1))"
 	done
-
-	printf "${reset}"
 }
 
 ytaudio () {
 	ytcheck
+	echo -e "First Paramter - Audio Format: 'flac' or 'best'"
 	youtube-dl.exe -x --audio-format $1 $2 $3 $4 $5 $6
 }
 
