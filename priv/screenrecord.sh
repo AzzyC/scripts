@@ -139,19 +139,29 @@ ffmpeg -loglevel warning -stats -guess_layout_max 0 -rtbufsize 200M -f dshow -fr
 rec_end="$(date +'%a %d-%m-%Y %H:%M:%S')"
 file_rec_end="$(sed 's/:/-/g' <<< "$rec_end")"
 
+mv /c/Users/"$user"/Desktop/ScreenRecord/streaming.mp4 /c/Users/"$user"/Desktop/ScreenRecord/"$file_rec_end".mp4
+
 echo -e "\n${red}Recording Ended:${white} $rec_end\n\n\
 \
 ${yellow}Recording Duration:${white} \
-$(ffprobe -v quiet -print_format compact=print_section=0:nokey=1:escape=csv -show_entries format=duration -sexagesimal /c/Users/"$user"/Desktop/ScreenRecord/streaming.mp4)\n\
+$(ffprobe -v quiet -print_format compact=print_section=0:nokey=1:escape=csv -show_entries format=duration -sexagesimal /c/Users/"$user"/Desktop/ScreenRecord/"$file_rec_end".mp4)\n\
 \
-${yellow}File saved as:${white} /c/Users/$user/Desktop/ScreenRecord/${file_rec_end}.mp4\n\
+${yellow}File saved as:${white} C:\Users\\\\${user}\Desktop\ScreenRecord\\${file_rec_end}.mp4\n\
 \
 ${yellow}Recording Folder Size:${white} $(du -h /c/Users/"$user"/Desktop/ScreenRecord | awk '{print $1}')B"
 
-mv /c/Users/"$user"/Desktop/ScreenRecord/streaming.mp4 /c/Users/"$user"/Desktop/ScreenRecord/"$file_rec_end".mp4
+while [[ ! "$open" =~ ^(Y|y|N|n)$ ]]; do
+	echo -ne "\n${green}Would you like to view the recording now? (y/N): "
+	read -n 2 open
 
-if ! tasklist -v -nh -fi "imagename eq explorer.exe" | grep -q ScreenRecord; then
-	explorer \\Users\\"$user"\\Desktop\\ScreenRecord
-fi
+	if [[ "$open" =~ ^[Yy]$ ]]; then
+		if ! tasklist -v -nh -fi "imagename eq explorer.exe" | grep -q ScreenRecord; then
+			explorer \\Users\\"$user"\\Desktop\\ScreenRecord
+		fi
+		explorer \\Users\\"$user"\\Desktop\\ScreenRecord\\"$file_rec_end".mp4
+	fi
 
-explorer \\Users\\"$user"\\Desktop\\ScreenRecord\\"$file_rec_end".mp4
+	if [[ ! "$open" =~ ^[Yy|Nn]$ ]]; then
+		echo -e "\n${red}You did not input 'y'/'Y' or 'n'/'N'! Try again."
+	fi
+done
