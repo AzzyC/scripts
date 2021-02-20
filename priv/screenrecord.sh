@@ -149,18 +149,25 @@ ${yellow}File saved as:${white} C:\Users\\\\${USERNAME}\Desktop\ScreenRecord\\${
 ${yellow}Recording${cyan}/${yellow}Folder Size:${white} $(du -h /c/Users/"$USERNAME"/Desktop/ScreenRecord/"$file_rec_end".mp4 | awk '{print $1}')B out of \
 $(du -h /c/Users/"$USERNAME"/Desktop/ScreenRecord | awk '{print $1}')B"
 
-while [[ ! "$open" =~ ^(Y|y|N|n)$ ]]; do
-	echo -ne "\n${green}Would you like to view the recording now? (y/N): "
+while [[ ! "$open" =~ ^(D|d|N|n)$ ]]; do
+	echo -ne "\n${green}What would you like to do with the recording now?\nOpen, Delete, Nothing (o/d/n): "
 	read -n 2 open
 
-	if [[ "$open" =~ ^[Yy]$ ]]; then
+	if [[ "$open" =~ ^[Oo]$ ]]; then
 		if ! tasklist -v -nh -fi "imagename eq explorer.exe" | grep -q ScreenRecord; then
 			explorer \\Users\\"$USERNAME"\\Desktop\\ScreenRecord
 		fi
 		explorer \\Users\\"$USERNAME"\\Desktop\\ScreenRecord\\"$file_rec_end".mp4
 	fi
 
-	if [[ ! "$open" =~ ^[Yy|Nn]$ ]]; then
-		echo -e "\n${red}You did not input 'y'/'Y' or 'n'/'N'! Try again."
+	if [[ "$open" =~ ^[Dd]$ ]]; then
+		echo -ne "\n$red"
+		rm -v /c/Users/"$USERNAME"/Desktop/ScreenRecord/"$file_rec_end".mp4
+	fi
+
+	if [[ ! "$open" =~ ^[Oo|Dd|Nn]$ ]]; then
+		echo -e "\n${red}You did not input 'o'/'O', 'd'/'D' or 'n'/'N'! Try again."
 	fi
 done
+
+echo -e "\u001b[0m"
