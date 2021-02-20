@@ -10,12 +10,14 @@ PATH="/c/Users/$USERNAME/Documents/ffmpeg:$PATH"
 linuxbashdir="$(sed 's/C:/\/c/; s/\\/\//g' <<< $EXEPATH)"
 
 if ! net session &> /dev/null; then
-	PS1='\[\033]0;$PWD\007\]\n\[\033[0;92m\][azzy \[\033[0;95m\]\w] \[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\]\n\$ '
+	PS1='\[\033]0;$PWD\007\]\n\[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\] \[\033[0;92m\][azzy \[\033[0;95m\]\w] \[\033[0m\]➤ '
 else
-	PS1='\[\033]0;admin: $PWD\007\]\n\[\033[0;31m\][admin@\[\033[0;92m\]azzy \[\033[0;95m\]\w] \[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\]\n\$ '
+	PS1='\[\033]0;admin: $PWD\007\]\n\[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\] \[\033[0;91m\][admin@\[\033[0;92m\]azzy \[\033[0;95m\]\w] \[\033[0m\]➤ '
 	cd /
 	schtasks -create -tn "git-bash-admin" -sc ONCE -st 01:09 -tr "$EXEPATH\git-bash-admin.exe" -f -rl HIGHEST &> /dev/null
 fi
+
+PS2='➤➤ '
 
 alias clear='clear -x'
 alias desk='explorer.exe \\Users\\"$USERNAME"\\Desktop'
@@ -24,8 +26,10 @@ alias doc='explorer.exe \\Users\\"$USERNAME"\\Documents'
 alias down='explorer.exe \\Users\\"$USERNAME"\\Downloads'
 alias fetch='bash <<< "$(curl -s https://raw.githubusercontent.com/dylanaraps/neofetch/master/neofetch)"'
 alias hades='bash <<< "$(curl -s https://del.dog/raw/hadesqissues)"'
-alias pray='bash /c/Users/$USERNAME/Documents/scripts/priv/masjidtime.sh'
-alias rec='bash /c/Users/$USERNAME/Documents/scripts/priv/screenrecord.sh'
+alias nosleep='bash /c/Users/"$USERNAME"/Documents/scripts/nosleep.sh'
+alias nosleeprec='bash /c/Users/"$USERNAME"/Documents/scripts/nosleep.sh bash /c/Users/"$USERNAME"/Documents/scripts/priv/screenrecord.sh'
+alias pray='bash /c/Users/"$USERNAME"/Documents/scripts/priv/masjidtime.sh'
+alias rec='bash /c/Users/"$USERNAME"/Documents/scripts/priv/screenrecord.sh'
 alias user='explorer.exe \\Users\\"$USERNAME"'
 
 admin () {
@@ -68,7 +72,7 @@ ffmpegcheck () {
 }
 
 history () {
-	builtin history -w /dev/stdout | cat -$1 2> /dev/null
+	builtin history -a | cat -$1 ~/.bash_history 2> /dev/null
 }
 
 src () {
