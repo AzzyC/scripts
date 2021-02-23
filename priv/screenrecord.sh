@@ -12,7 +12,7 @@ if [[ "$OS" != *Windows* ]]; then
 fi
 
 PATH="/c/Users/$USERNAME/Documents/ffmpeg:$PATH"
-linuxbashdir="$(sed 's/C:/\/c/; s/\\/\//g' <<< $EXEPATH)"
+linuxbashdir="$(sed 's/C:/\/c/; s/\\/\//g' <<< "$EXEPATH")"
 
 su () {
 	if ! net session &> /dev/null; then
@@ -30,27 +30,27 @@ su () {
 	fi
 }
 
-ffmpegcheck () {
-	ffmpeg -loglevel quiet 2> /dev/null
-	if [[ $? -eq 127 ]]; then
-		echo -e "\n${yellow}ffmpeg is not installed\n${green}Downloading latest.."
-		curl -L --progress-bar "$(curl -s https://github.com/GyanD/codexffmpeg/releases\
-									| grep -m 1 'essentials.*zip'\
-									| awk '{print $2}'\
-									| sed 's/href="/https:\/\/github.com/; s/"//')"\
-									> /c/Users/"$USERNAME"/Documents/temp.zip
-		unzip -q /c/Users/"$USERNAME"/Documents/temp.zip -d /c/Users/"$USERNAME"/Documents/ && rm /c/Users/"$USERNAME"/Documents/temp.zip
-		mv /c/Users/"$USERNAME"/Documents/ffmpeg-*/bin /c/Users/"$USERNAME"/Documents/ffmpeg && rm -rf /c/Users/"$USERNAME"/Documents/ffmpeg-*/
-		reg add "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" -v "C:\Users\\${USERNAME}\Documents\ffmpeg\ffmpeg.exe" -t REG_SZ -d HIGHDPIAWARE -f 1> /dev/null
-	fi
-}
-
-if [[ ! -d /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/ ]]; then
-	echo -e "\n${yellow}Libs downloaded for Screen Recording will be stored in:${white} /c/Users/$USERNAME/Documents/ScreenRecordLibs"
+ffmpeg -loglevel quiet 2> /dev/null
+if [[ "$?" -eq 127 ]]; then
+	echo -e "\n${yellow}ffmpeg is not installed\n${green}Downloading latest.."
+	curl -L --progress-bar "$(curl -s https://github.com/GyanD/codexffmpeg/releases\
+								| grep -m 1 'essentials.*zip'\
+								| awk '{print $2}'\
+								| sed 's/href="/https:\/\/github.com/; s/"//')"\
+								> /c/Users/"$USERNAME"/Documents/temp.zip
+	unzip -q /c/Users/"$USERNAME"/Documents/temp.zip -d /c/Users/"$USERNAME"/Documents/ && rm /c/Users/"$USERNAME"/Documents/temp.zip
+	mv /c/Users/"$USERNAME"/Documents/ffmpeg-*/bin /c/Users/"$USERNAME"/Documents/ffmpeg && rm -rf /c/Users/"$USERNAME"/Documents/ffmpeg-*/
+	reg add "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" -v "C:\Users\\${USERNAME}\Documents\ffmpeg\ffmpeg.exe" -t REG_SZ -d HIGHDPIAWARE -f 1> /dev/null
+	echo -e "ffmpeg installed"
 fi
 
-if ! ffmpeg -hide_banner -list_devices true -f dshow -i dummy 2>&1 | grep -q 'screen-capture'; then
-	ffmpegcheck
+if [[ ! -d /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/ ]]; then
+	echo -e "\n${yellow}Libs downloaded for Screen Recording will be stored in:${white} C:\Users\\\\${USERNAME}\Documents\ScreenRecordLibs"
+fi
+
+rec_devices="$(ffmpeg -hide_banner -list_devices true -f dshow -i dummy 2>&1)"
+
+if ! grep -q 'screen-capture' <<< "$rec_devices"; then
 	echo -e "\n${yellow}'screen-capture-recorder' lib is not installed"
 	su
 	echo -e "${green}Downloading.."
@@ -58,10 +58,10 @@ if ! ffmpeg -hide_banner -list_devices true -f dshow -i dummy 2>&1 | grep -q 'sc
 	curl -L --progress-bar "https://github.com/ShareX/ShareX/blob/master/Lib/screen-capture-recorder-x64.dll?raw=true"\
 	> /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
 	regsvr32 -s /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
+	echo -e "'screen-capture-recorder' lib installed"
 fi
 
-if ! ffmpeg -hide_banner -list_devices true -f dshow -i dummy 2>&1 | grep -q 'virtual-audio'; then
-	ffmpegcheck
+if ! grep -q 'virtual-audio' <<< "$rec_devices"; then
 	echo -e "\n${yellow}'virtual-audio-capturer' lib is not installed"
 	su
 	echo -e "${green}Downloading.."
@@ -69,19 +69,20 @@ if ! ffmpeg -hide_banner -list_devices true -f dshow -i dummy 2>&1 | grep -q 'vi
 	curl -L --progress-bar "https://github.com/ShareX/ShareX/blob/master/Lib/virtual-audio-capturer-x64.dll?raw=true"\
 	> /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/virtual-audio-capturer-x64.dll
 	regsvr32 -s /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/virtual-audio-capturer-x64.dll 1> /dev/null
+	echo -e "'virtual-audio-capturer' lib installed"
 fi
 
 if [[ ! -e /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh ]]; then
 	touch /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh
 	echo -nE "#!/bin/bash
-#bash /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh
+#bash /c/Users/$USERNAME/Documents/ScreenRecordLibs/uninstalllibs.sh
 # - To remove Screen Recorder libs and from registry
 
 if ! net session &> /dev/null; then
-	echo -e \"\n\u001b[31;1mUser Privileges Only\nWill not be able to unregister libraries\n
-	\rPlease bash script again in the new terminal window, which has Administrator Privileges\n\nNo actions taken!\nExiting..\"
-	cp -n "$linuxbashdir"/git-bash.exe "$linuxbashdir"/git-bash-admin.exe
-	reg add \"HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\" -v \""$EXEPATH"\git-bash-admin.exe\" -t REG_SZ -d RUNASADMIN -f 1> /dev/null
+	echo -e \"\n${red}User Privileges Only\nWill not be able to unregister libraries\n
+	\rPlease bash script again in the new terminal window, which has Administrator Privileges\n\nNo actions taken!\nExiting..\u001b[0m\"
+	cp -n $linuxbashdir/git-bash.exe $linuxbashdir/git-bash-admin.exe
+	reg add \"HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\" -v \"$EXEPATH\git-bash-admin.exe\" -t REG_SZ -d RUNASADMIN -f 1> /dev/null
 	sleep 3
 	if ! schtasks -run -i -tn \"git-bash-admin\" &> /dev/null; then
 		explorer $(cd / && pwd -W | sed 's/\//\\/g; s/\\/\\\\/g; s/C://')\\\\git-bash-admin.exe
@@ -91,9 +92,9 @@ else
 	schtasks -create -tn \"git-bash-admin\" -sc ONCE -st 01:09 -tr \"$EXEPATH\\git-bash-admin.exe\" -f -rl HIGHEST &> /dev/null
 fi
 
-regsvr32 -u /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
-regsvr32 -u /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/virtual-audio-capturer-x64.dll
-rm -rf /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/
+regsvr32 -u /c/Users/$USERNAME/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
+regsvr32 -u /c/Users/$USERNAME/Documents/ScreenRecordLibs/virtual-audio-capturer-x64.dll
+rm -rf /c/Users/$USERNAME/Documents/ScreenRecordLibs/
 "\
 	> /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh
 	chmod +x /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh
@@ -101,7 +102,7 @@ fi
 
 if [[ ! -d /c/Users/"$USERNAME"/Desktop/ScreenRecord/ ]]; then
 	mkdir -p /c/Users/"$USERNAME"/Desktop/ScreenRecord/
-	echo -e "\n${yellow}All recordings will be stored in:${white} /c/Users/$USERNAME/Desktop/ScreenRecord"
+	echo -e "\n${yellow}All recordings will be stored in:${white} C:\Users\\\\${USERNAME}\Desktop\ScreenRecord"
 fi
 
 if [ -n "$1" ]; then
@@ -151,7 +152,7 @@ $(du -h /c/Users/"$USERNAME"/Desktop/ScreenRecord | awk '{print $1}')B"
 
 while [[ ! "$open" =~ ^(D|d|N|n)$ ]]; do
 	echo -ne "\n${green}What would you like to do with the recording now?\nOpen, Delete, Nothing (o/d/n): "
-	read -n 2 open
+	read -r -n 2 open
 
 	if [[ "$open" =~ ^[Oo]$ ]]; then
 		if ! tasklist -v -nh -fi "imagename eq explorer.exe" | grep -q ScreenRecord; then
