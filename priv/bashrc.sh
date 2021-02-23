@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if ! grep -q bashrc.sh /etc/bash.bashrc; then
+	echo -e "\nsource /c/Users/$USERNAME/Documents/scripts/priv/bashrc.sh 2> /dev/null\
+	|| source <(curl -s 'https://raw.githubusercontent.com/AzzyC/scripts/ReAdScRiPt/priv/bashrc.sh')" \
+	>> /etc/bash.bashrc
+fi
+
 cyan="\u001b[36;1m"
 green="\u001b[32;1m"
 red="\u001b[31;1m"
@@ -38,6 +44,10 @@ admin () {
 	if ! schtasks -run -i -tn "git-bash-admin" &> /dev/null; then
 		explorer "$EXEPATH"\\git-bash-admin.exe
 	fi
+}
+
+cheat () {
+	curl -s cheat.sh/"$1"
 }
 
 crop () {
