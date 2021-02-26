@@ -48,31 +48,9 @@ if [[ ! -d /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/ ]]; then
 	echo -e "\n${yellow}Libs downloaded for Screen Recording will be stored in:${white} C:\Users\\\\${USERNAME}\Documents\ScreenRecordLibs"
 fi
 
-rec_devices="$(ffmpeg -hide_banner -list_devices true -f dshow -i dummy 2>&1)"
-
-if ! grep -q 'screen-capture' <<< "$rec_devices"; then
-	echo -e "\n${yellow}'screen-capture-recorder' lib is not installed"
-	su
-	echo -e "${green}Downloading.."
+if [ ! -e /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh ]; then
 	mkdir -p /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/
-	curl -L --progress-bar "https://github.com/ShareX/ShareX/blob/master/Lib/screen-capture-recorder-x64.dll?raw=true"\
-	> /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
-	regsvr32 -s /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
-	echo -e "'screen-capture-recorder' lib installed"
-fi
-
-if ! grep -q 'virtual-audio' <<< "$rec_devices"; then
-	echo -e "\n${yellow}'virtual-audio-capturer' lib is not installed"
-	su
-	echo -e "${green}Downloading.."
-	mkdir -p /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/
-	curl -L --progress-bar "https://github.com/ShareX/ShareX/blob/master/Lib/virtual-audio-capturer-x64.dll?raw=true"\
-	> /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/virtual-audio-capturer-x64.dll
-	regsvr32 -s /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/virtual-audio-capturer-x64.dll 1> /dev/null
-	echo -e "'virtual-audio-capturer' lib installed"
-fi
-
-if [[ ! -e /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh ]]; then
+	attrib +h "C:\Users\\$USERNAME\Documents\ScreenRecordLibs"
 	touch /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh
 	echo -nE "#!/bin/bash
 #bash /c/Users/$USERNAME/Documents/ScreenRecordLibs/uninstalllibs.sh
@@ -92,15 +70,39 @@ else
 	schtasks -create -tn \"git-bash-admin\" -sc ONCE -st 01:09 -tr \"$EXEPATH\\git-bash-admin.exe\" -f -rl HIGHEST &> /dev/null
 fi
 
-regsvr32 -u /c/Users/$USERNAME/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
-regsvr32 -u /c/Users/$USERNAME/Documents/ScreenRecordLibs/virtual-audio-capturer-x64.dll
+#regsvr32 -u /c/Users/$USERNAME/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
+#regsvr32 -u /c/Users/$USERNAME/Documents/ScreenRecordLibs/virtual-audio-capturer-x64.dll
 rm -rf /c/Users/$USERNAME/Documents/ScreenRecordLibs/
 "\
 	> /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh
 	chmod +x /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh
 fi
 
-if [[ ! -d /c/Users/"$USERNAME"/Desktop/ScreenRecord/ ]]; then
+rec_devices="$(ffmpeg -hide_banner -list_devices true -f dshow -i dummy 2>&1)"
+
+if ! grep -q 'screen-capture' <<< "$rec_devices"; then
+	echo -e "\n${yellow}'screen-capture-recorder' lib is not installed"
+	su
+	echo -e "${green}Downloading.."
+	curl -L --progress-bar "https://github.com/ShareX/ShareX/blob/master/Lib/screen-capture-recorder-x64.dll?raw=true"\
+	> /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
+	regsvr32 -s /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
+	sed -i '19s/#//' /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh
+	echo -e "'screen-capture-recorder' lib installed"
+fi
+
+if ! grep -q 'virtual-audio' <<< "$rec_devices"; then
+	echo -e "\n${yellow}'virtual-audio-capturer' lib is not installed"
+	su
+	echo -e "${green}Downloading.."
+	curl -L --progress-bar "https://github.com/ShareX/ShareX/blob/master/Lib/virtual-audio-capturer-x64.dll?raw=true"\
+	> /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/virtual-audio-capturer-x64.dll
+	regsvr32 -s /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/virtual-audio-capturer-x64.dll 1> /dev/null
+	sed -i '20s/#//' /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh
+	echo -e "'virtual-audio-capturer' lib installed"
+fi
+
+if [ ! -d /c/Users/"$USERNAME"/Desktop/ScreenRecord/ ]; then
 	mkdir -p /c/Users/"$USERNAME"/Desktop/ScreenRecord/
 	echo -e "\n${yellow}All recordings will be stored in:${white} C:\Users\\\\${USERNAME}\Desktop\ScreenRecord"
 fi
