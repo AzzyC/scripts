@@ -51,7 +51,6 @@ fi
 if [ ! -e /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh ]; then
 	mkdir -p /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/
 	attrib +h "C:\Users\\$USERNAME\Documents\ScreenRecordLibs"
-	touch /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh
 	echo -nE "#!/bin/bash
 #bash /c/Users/$USERNAME/Documents/ScreenRecordLibs/uninstalllibs.sh
 # - To remove Screen Recorder libs and from registry
@@ -132,9 +131,9 @@ else
 	S="$time Second(s)"
 fi
 
-echo -ne "\n${yellow}Current Max Recording Limit:${white} ${H}${M}${S}\n\n\
+echo -e "\n${yellow}Recording Limit:${white} ${H}${M}${S}\n\n\
 \
-${green}Script Started:${white} $(date +'%d-%m-%Y %H:%M:%S')\n\n${cyan}"
+${green}Script Started:${white} $(date +'%d-%m-%Y %H:%M:%S')\n${cyan}"
 ffmpeg -loglevel warning -stats -guess_layout_max 0 -rtbufsize 200M -f dshow -framerate 30 -i video="screen-capture-recorder":audio="virtual-audio-capturer" -t "$time" -c:v libx264 -vsync 2 -r 30 -preset fast -tune zerolatency -crf 30 -pix_fmt yuv420p -movflags +faststart -c:a aac -ac 2 -b:a 128k -y /c/Users/"$USERNAME"/Desktop/ScreenRecord/streaming.mp4
 
 rec_end="$(date +'%a %d-%m-%Y %H:%M:%S')"
@@ -152,23 +151,42 @@ ${yellow}File saved as:${white} C:\Users\\\\${USERNAME}\Desktop\ScreenRecord\\${
 ${yellow}Recording${cyan}/${yellow}Folder Size:${white} $(du -h /c/Users/"$USERNAME"/Desktop/ScreenRecord/"$file_rec_end".mp4 | awk '{print $1}')B out of \
 $(du -h /c/Users/"$USERNAME"/Desktop/ScreenRecord | awk '{print $1}')B"
 
-while [[ ! "$open" =~ ^(D|d|N|n)$ ]]; do
-	echo -ne "\n${green}What would you like to do with the recording now?\nOpen, Delete, Nothing (o/d/n): "
-	read -r -n 2 open
+while [[ ! "$action" =~ ^(D|d|N|n)$ ]]; do
+	echo -ne "\n${green}What would you like to do with the recording now?\nNothing, Open, Rename, Delete (n/O/r/D): "
+	read -r -n 2 action
 
-	if [[ "$open" =~ ^[Oo]$ ]]; then
+	if [[ "$action" =~ ^[Oo]$ ]]; then
 		if ! tasklist -v -nh -fi "imagename eq explorer.exe" | grep -q ScreenRecord; then
 			explorer \\Users\\"$USERNAME"\\Desktop\\ScreenRecord
 		fi
 		explorer \\Users\\"$USERNAME"\\Desktop\\ScreenRecord\\"$file_rec_end".mp4
 	fi
 
-	if [[ "$open" =~ ^[Dd]$ ]]; then
+	if [[ "$action" =~ ^[Rr]$ ]]; then
+		echo -ne "\n${green}Rename file to: "
+		read -r rename
+		rename="$(sed 's/\\//g; s/\///g; s/://g; s/*//g; s/?//g; s/"//g; s/<//g; s/>//g; s/|//g' <<< "$rename")"
+
+		if mv -n /c/Users/"$USERNAME"/Desktop/ScreenRecord/"$file_rec_end".mp4 /c/Users/"$USERNAME"/Desktop/ScreenRecord/"$rename".mp4 2> /dev/null; then
+			if [ -e /c/Users/"$USERNAME"/Desktop/ScreenRecord/"$file_rec_end".mp4 ]; then
+				echo -e "${red}File not renamed: '$rename' already exists"
+			else
+				file_rec_end="$rename"
+				echo -ne "${yellow}File saved as:${white} "
+				echo -E "C:\Users\\${USERNAME}\Desktop\ScreenRecord\\${file_rec_end}.mp4"
+			fi
+		else
+			echo -e "${red}File not renamed: '$file_rec_end' is currently open"
+		fi
+
+	fi
+
+	if [[ "$action" =~ ^[Dd]$ ]]; then
 		echo -ne "\n$red"
 		rm -v /c/Users/"$USERNAME"/Desktop/ScreenRecord/"$file_rec_end".mp4
 	fi
 
-	if [[ ! "$open" =~ ^[Oo|Dd|Nn]$ ]]; then
+	if [[ ! "$action" =~ ^[Oo|Dd|Nn|Rr]$ ]]; then
 		echo -e "\n${red}You did not input 'o'/'O', 'd'/'D' or 'n'/'N'! Try again."
 	fi
 done
