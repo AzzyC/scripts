@@ -2,7 +2,7 @@
 
 if ! grep -q bashrc.sh /etc/bash.bashrc; then
 	echo -e "\nsource /c/Users/$USERNAME/Documents/scripts/priv/bashrc.sh 2> /dev/null\
-	|| source <(curl -s 'https://raw.githubusercontent.com/AzzyC/scripts/ReAdScRiPt/priv/bashrc.sh')" \
+	|| source <(curl -s 'https://raw.githubusercontent.com/AzzyC/scripts/main/priv/bashrc.sh')" \
 	>> /etc/bash.bashrc
 fi
 
@@ -12,8 +12,14 @@ red="\u001b[31;1m"
 white="\u001b[37;1m"
 yellow="\u001b[33;1m"
 
-PATH="/c/Users/$USERNAME/Documents/ffmpeg:$PATH"
 linuxbashdir="$(sed 's/C:/\/c/; s/\\/\//g' <<< $EXEPATH)"
+PATH="/c/Users/$USERNAME/Documents/ffmpeg:$PATH"
+
+HISTCONTROL='erasedups'
+HISTFILESIZE='3000'
+HISTSIZE='3000'
+HISTTIMEFORMAT="[%a %d %T] "
+shopt -s histappend
 
 if ! net session &> /dev/null; then
 	PS1='\[\033]0;$PWD\007\]\n\[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\] \[\033[0;92m\][azzy \[\033[0;95m\]\w] \[\033[0m\]➤ '
@@ -37,11 +43,13 @@ alias nosleeprec='bash /c/Users/"$USERNAME"/Documents/scripts/nosleep.sh bash /c
 alias pray='bash /c/Users/"$USERNAME"/Documents/scripts/priv/masjidtime.sh'
 alias rec='bash /c/Users/"$USERNAME"/Documents/scripts/priv/screenrecord.sh'
 alias user='explorer.exe \\Users\\"$USERNAME"'
+alias weather='curl -s wttr.in/M19\ 1RG'
 
 admin () {
 	cp -n "$linuxbashdir"/git-bash.exe "$linuxbashdir"/git-bash-admin.exe
 	reg add "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" -v "$EXEPATH\git-bash-admin.exe" -t REG_SZ -d RUNASADMIN -f 1> /dev/null
 	if ! schtasks -run -i -tn "git-bash-admin" &> /dev/null; then
+		echo -e "${red}Must launch git-bash via UAC prompt once"
 		explorer "$EXEPATH"\\git-bash-admin.exe
 	fi
 }
@@ -81,8 +89,40 @@ ffmpegcheck () {
 	fi
 }
 
+fzycheck () {
+	echo -e "${cyan}If you can see this, you have fzy installed" | fzy 2> /dev/null
+  if [[ "$?" -eq 127 ]]; then
+    echo -e "${yellow}fuzzy not installed${green}"
+    currentdir="$PWD"
+    mkdir -p /fzytemp && cd /fzytemp
+    curl -L --progress-bar "$(curl -s https://packages.msys2.org/package/fzy \
+    | grep 'File:' -A1 | grep 'href' | awk '{print $4}' | sed 's/href="//; s/">.*//')" \
+    > fzy.pkg.tar.xz
+    xz -d fzy.pkg.tar.xz
+    tar -xf fzy.pkg.tar -C /
+    rm -r /fzytemp
+		rm /.BUILDINFO /.MTREE /.PKGINFO
+    echo -e "fzy (fuzzy finder) installed"
+		cd "$currentdir"
+  fi
+}
+
 history () {
-	builtin history -a | cat -$1 ~/.bash_history 2> /dev/null
+	read -r -a select <<< "$(builtin history | tac | fzy -l 25 -p 'Search history: ' | awk '{$1=$2=$3=$4=""; print $0}')"
+	if [ -n "$select" ]; then
+	echo -E "
+$(tput setaf 3)Copy & Paste:
+$(tput setaf 2)${select[@]}"
+	fi
+}
+
+regedit.exe () {
+	schtasks -create -tn "regedit" -sc ONCE -st 01:09 -tr "C:\Windows\regedit.exe" -f -rl HIGHEST &> /dev/null
+	if ! schtasks -run -i -tn "regedit" &> /dev/null; then
+		echo -e "${red}'regedit' task does not exist\nCreate task once while admin; using default UAC prompt method"
+		explorer "$SYSTEMROOT"\\regedit.exe
+		admin
+	fi
 }
 
 src () {
@@ -103,15 +143,6 @@ ss () {
 	ffmpeg -loglevel quiet -stats -ss "$stamp" -i "$inputfile" -vframes 1 -q:v 1 -y /c/Users/"$USERNAME"/Desktop/ScreenRecord/"$i".png
 	i="$((i+1))"
 	done
-}
-
-weather () {
-	curl -s "https://weather-broker-cdn.api.bbci.co.uk/en/forecast/rss/3day/2643123" \
-		| grep -m 1 "pub" \
-		| sed "s/   *//g; s/<pubDate>/\nLast Updated: /; s/<\/.*/\n/"
-	curl -s "https://weather-broker-cdn.api.bbci.co.uk/en/forecast/rss/3day/2643123" \
-		| grep -E "(To|title|description|pub)" \
-		| sed "s/Â//g; s/<pub.*//g; s/<[^>]*>//g; s/   *//g; 1,4d; s/Wind D.*Wind/Wind/g; s/Press.*Hum/Hum/g ; s/UV.*Pol/Pol/g; s/Sunrise/\nSunrise/g"
 }
 
 ytaudio () {
