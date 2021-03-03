@@ -12,7 +12,6 @@ red="\u001b[31;1m"
 white="\u001b[37;1m"
 yellow="\u001b[33;1m"
 
-linuxbashdir="$(sed 's/C:/\/c/; s/\\/\//g' <<< $EXEPATH)"
 PATH="/c/Users/$USERNAME/Documents/ffmpeg:$PATH"
 
 HISTCONTROL='erasedups'
@@ -27,16 +26,18 @@ else
 	PS1='\[\033]0;admin: $PWD\007\]\n\[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\] \[\033[0;91m\][admin@\[\033[0;92m\]azzy \[\033[0;95m\]\w] \[\033[0m\]➤ '
 	cd /
 	schtasks -create -tn "git-bash-admin" -sc ONCE -st 01:09 -tr "$EXEPATH\git-bash-admin.exe" -f -rl HIGHEST &> /dev/null
+	reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\Open Git-Bash here\command" -d "$EXEPATH\git-bash.exe" -t REG_SZ -f 1> /dev/null
 fi
 
 PS2='➤➤ '
 
-alias clear='clear -x'
+alias c='clear'
 alias desk='explorer.exe \\Users\\"$USERNAME"\\Desktop'
 alias diff='git diff --color=always 2>&1 | sed "/^warning: /d; /^The file/d"'
 alias doc='explorer.exe \\Users\\"$USERNAME"\\Documents'
 alias down='explorer.exe \\Users\\"$USERNAME"\\Downloads'
 alias fetch='bash <<< "$(curl -s https://raw.githubusercontent.com/dylanaraps/neofetch/master/neofetch)"'
+alias gitlog='git log --pretty=format:"%h - %an, %ar | %s" | fzy -l 25 -p "Search commit history: "'
 alias hades='bash <<< "$(curl -s https://del.dog/raw/hadesqissues)"'
 alias nosleep='bash /c/Users/"$USERNAME"/Documents/scripts/nosleep.sh'
 alias nosleeprec='bash /c/Users/"$USERNAME"/Documents/scripts/nosleep.sh bash /c/Users/"$USERNAME"/Documents/scripts/priv/screenrecord.sh'
@@ -46,7 +47,7 @@ alias user='explorer.exe \\Users\\"$USERNAME"'
 alias weather='curl -s wttr.in/M19\ 1RG'
 
 admin () {
-	cp -n "$linuxbashdir"/git-bash.exe "$linuxbashdir"/git-bash-admin.exe
+	cp -n /git-bash.exe /git-bash-admin.exe
 	reg add "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" -v "$EXEPATH\git-bash-admin.exe" -t REG_SZ -d RUNASADMIN -f 1> /dev/null
 	if ! schtasks -run -i -tn "git-bash-admin" &> /dev/null; then
 		echo -e "${red}Must launch git-bash via UAC prompt once"
