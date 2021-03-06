@@ -11,6 +11,7 @@ green="\u001b[32;1m"
 red="\u001b[31;1m"
 white="\u001b[37;1m"
 yellow="\u001b[33;1m"
+reset="\u001b[0m"
 
 PATH="/c/Users/$USERNAME/Documents/ffmpeg:$PATH"
 
@@ -50,7 +51,7 @@ admin () {
 	cp -n /git-bash.exe /git-bash-admin.exe
 	reg add "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" -v "$EXEPATH\git-bash-admin.exe" -t REG_SZ -d RUNASADMIN -f 1> /dev/null
 	if ! schtasks -run -i -tn "git-bash-admin" &> /dev/null; then
-		echo -e "${red}Must launch git-bash via UAC prompt once"
+		echo -e "${red}Must launch git-bash via UAC prompt once${reset}"
 		explorer "$EXEPATH"\\git-bash-admin.exe
 	fi
 }
@@ -61,17 +62,18 @@ cheat () {
 
 crop () {
 	ffmpegcheck
-	inputfile="$(printf "$1" | sed 's/'\''//g')"
-	read -r -p "Timestamp of where to begin new video [HH:MM:SS] [00:00:00]: " begin
-	printf '%s\n' ""
-	read -r -p "Timestamp of where to end new video [HH:MM:SS] [00:00:00]: " end
-	printf '%s\n' ""
-	read -r -p "Name of cropped video: " outputfile
-	printf "\n${cyan}"
+	inputfile="$(sed 's/'\''//g' <<< "$1")"
+	echo -ne "\nTimestamp of where to begin new video [HH:MM:SS] [00:00:00]: "
+	read -r begin
+	echo -ne "\nTimestamp of where to end new video [HH:MM:SS] [00:00:00]: "
+	read -r end
+	echo -ne "Name of cropped video: "
+	read -r outputfile
+	echo -e "${cyan}"
 
 	mkdir -p /c/Users/"$USERNAME"/Desktop/ScreenRecord/
 	ffmpeg -loglevel warning -stats -i "$inputfile" -ss "$begin" -to "$end" -c:v libx264 -vsync 2 -y /c/Users/"$USERNAME"/Desktop/ScreenRecord/"$outputfile".mp4
-	printf "\n${yellow}File saved: /c/Users/$USERNAME/Desktop/ScreenRecord/${outputfile}.mp4\n"
+	echo -e "\n${yellow}File saved: /c/Users/$USERNAME/Desktop/ScreenRecord/${outputfile}.mp4${reset}"
 	explorer.exe \\Users\\"$USERNAME"\\Desktop\\ScreenRecord\\"$outputfile".mp4
 }
 
@@ -103,7 +105,7 @@ fzycheck () {
     tar -xf fzy.pkg.tar -C /
     rm -r /fzytemp
 		rm /.BUILDINFO /.MTREE /.PKGINFO
-    echo -e "fzy (fuzzy finder) installed"
+    echo -e "fzy (fuzzy finder) installed${reset}"
 		cd "$currentdir"
   fi
 }
@@ -114,13 +116,19 @@ history () {
 	echo -E "
 $(tput setaf 3)Copy & Paste:
 $(tput setaf 2)${select[@]}"
+	echo -ne "\nWould you like to run command? (Any key other than 'n'/'N' for Yes)\n${yellow}- Aliases will not work:${reset} "
+	read -r -n 1 runhistory
+	echo -e "${reset}"
+		if [[ ! "$runhistory" =~ ^[Nn]$ ]]; then
+			bash <<< "$(echo -E "${select[@]}")"
+		fi
 	fi
 }
 
 regedit.exe () {
 	schtasks -create -tn "regedit" -sc ONCE -st 01:09 -tr "C:\Windows\regedit.exe" -f -rl HIGHEST &> /dev/null
 	if ! schtasks -run -i -tn "regedit" &> /dev/null; then
-		echo -e "${red}'regedit' task does not exist\nCreate task once while admin; using default UAC prompt method"
+		echo -e "${red}'regedit' task does not exist\nRun this alias while admin once${reset}"
 		explorer "$SYSTEMROOT"\\regedit.exe
 		admin
 	fi
@@ -128,15 +136,15 @@ regedit.exe () {
 
 src () {
 	source /etc/bash.bashrc
-	printf "\n${yellow}b${cyan}a${yellow}s${red}h${white}rc ${cyan}s${yellow}o${green}u${red}r${white}c${yellow}e${cyan}d!\n"
+	echo -e "\n${yellow}b${cyan}a${yellow}s${red}h${white}rc ${cyan}s${yellow}o${green}u${red}r${white}c${yellow}e${cyan}d!${reset}"
 }
 
 ss () {
 	ffmpegcheck
-	printf "\n"
-	inputfile="$(printf "$1" | sed 's/'\''//g')"
-	read -r -p "Video timestamps to be screenshotted [HH:MM:SS] [00:00:00]: " -a stamps
-	printf "\n${cyan}"
+	inputfile="$(sed 's/'\''//g' <<< "$1")"
+	echo -ne "\n${green}Video timestamps to be screenshotted [HH:MM:SS] [00:00:00]: "
+	read -r -a stamps
+	echo -ne "${cyan}"
 	mkdir -p /c/Users/"$USERNAME"/Desktop/ScreenRecord/
 
 	i=1
@@ -144,6 +152,7 @@ ss () {
 	ffmpeg -loglevel quiet -stats -ss "$stamp" -i "$inputfile" -vframes 1 -q:v 1 -y /c/Users/"$USERNAME"/Desktop/ScreenRecord/"$i".png
 	i="$((i+1))"
 	done
+	echo -ne "$reset"
 }
 
 ytaudio () {
@@ -156,7 +165,7 @@ ytcheck () {
 	youtube-dl.exe --version &>/dev/null
 
 	if [[ "$?" -eq 127 ]]; then
-		printf "\n${yellow}youtube-dl is not installed\n${green}Downloading latest GitHub release..\n${white}"
+		echo -e "\n${yellow}youtube-dl is not installed\n${green}Downloading latest GitHub release..${reset}"
 		curl -L --progress-bar -o /usr/bin/youtube-dl.exe "$(curl -s https://github.com/ytdl-org/youtube-dl/releases\
 																| grep -m1 youtube-dl.exe\
 																| awk '{print $2}'\
