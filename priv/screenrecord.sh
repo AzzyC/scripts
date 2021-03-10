@@ -161,7 +161,7 @@ ${yellow}Recording${cyan}/${yellow}Folder Size:${white} $(du -sh /c/Users/"$USER
 $(du -sh /c/Users/"$USERNAME"/Desktop/ScreenRecord | awk '{print $1}')B"
 
 while [[ ! "$action" =~ ^(D|d|N|n)$ ]]; do
-	echo -ne "\n${green}What would you like to do with the recording now?\nNothing, Open, Rename, Delete (n/O/r/D): "
+	echo -ne "\n${green}What would you like to do with the recording now?\nNothing, Open, Rename, Delete (n/O/r/D):${white} "
 	read -r -n 2 action
 
 	if [[ "$action" =~ ^[Oo]$ ]]; then
@@ -173,7 +173,7 @@ while [[ ! "$action" =~ ^(D|d|N|n)$ ]]; do
 	fi
 
 	if [[ "$action" =~ ^[Rr]$ ]]; then
-		echo -ne "\n${green}Rename file to: "
+		echo -ne "\n${green}Rename file to:${white} "
 		read -r rename
 		rename="$(sed 's/\\//g; s/\///g; s/://g; s/*//g; s/?//g; s/"//g; s/<//g; s/>//g; s/|//g' <<< "$rename")"
 
@@ -200,5 +200,25 @@ while [[ ! "$action" =~ ^(D|d|N|n)$ ]]; do
 		echo -e "\n${red}You did not input 'n'/'N', 'o'/'O', 'r'/'R' or 'd'/'D'! Try again."
 	fi
 done
+
+if [[ ! -e "/c/Users/$USERNAME/Desktop/Screen Recorder.lnk" && ! -e "/.noscreenrecordshortcut.txt" ]]; then
+	while [[ ! "$shortcut" =~ ^(Y|y|N|n)$ ]]; do
+		echo -ne "\n${green}Would you like a Desktop shortcut to Screen Record? (y/N):${white} "
+		read -r -n 2 shortcut
+
+		if [[ "$shortcut" =~ ^[Yy]$ ]]; then
+			create-shortcut --arguments "-c 'bash <(curl -Ls git.io/JtFEh); sleep 3.5'" --description 'Record Screen for 2hrs15mins' \
+				'/git-bash.exe' "/c/Users/$USERNAME/Desktop/Screen Recorder.lnk"
+		fi
+
+		if [[ "$shortcut" =~ ^[Nn]$ ]]; then
+			echo -e 'Placeholder: User did not want Desktop shortcut to Screen Record' > /.noscreenrecordshortcut.txt
+		fi
+
+		if [[ ! "$shortcut" =~ ^[Yy|Nn]$ ]]; then
+			echo -e "\n${red}You did not input 'y'/'Y' or 'n'/'N'! Try again."
+		fi
+	done
+fi
 
 echo -e "${reset}"
