@@ -1,10 +1,9 @@
-prayertimelist=( $(curl -s https://shahjalalmosque.org/ | grep Begins -A 1 | sed 'N;s/\n/ /; s/<[^>]\+>/ /g') )
+read -r -a prayertimelist <<< "$(curl -s https://shahjalalmosque.org/ | grep Begins -A 1 | sed 'N;s/\n/ /; s/<[^>]\+>/ /g; s/Begins//')"
 
-fajr="${prayertimelist[1]}"
-sunrise="${prayertimelist[2]}"
-zuhr="${prayertimelist[3]}"
-asr="${prayertimelist[4]}"
-maghrib="${prayertimelist[5]}"
-isha="${prayertimelist[6]}"
-
-printf '%s\n' "Prayer Times ($(date +%d/%m/%Y))" "Fajr: ${fajr}" "Sunrise: ${sunrise}" "Zuhr: ${zuhr}" "Asr: ${asr}" "Maghrib: ${maghrib}" "Isha: ${isha}"
+echo "Prayer Times ($(date +'%d/%m/%Y'))
+Fajr: ${prayertimelist[0]}
+Sunrise: ${prayertimelist[1]}
+Zuhr: ${prayertimelist[2]}
+Asr: ${prayertimelist[3]}
+Maghrib: ${prayertimelist[4]}
+Isha: ${prayertimelist[5]}"
