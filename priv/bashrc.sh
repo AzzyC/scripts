@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if ! grep -q bashrc.sh /etc/bash.bashrc; then
 	echo -e "\nsource /c/Users/$USERNAME/Documents/scripts/priv/bashrc.sh\
@@ -6,12 +6,15 @@ if ! grep -q bashrc.sh /etc/bash.bashrc; then
 	>> /etc/bash.bashrc
 fi
 
-cyan="\u001b[36;1m"
-green="\u001b[32;1m"
-red="\u001b[31;1m"
-white="\u001b[37;1m"
-yellow="\u001b[33;1m"
-reset="\u001b[0m"
+green="\033[0;92m"
+blue="\033[0;94m"
+bluebg="\033[44m"
+red="\033[0;91m"
+redbg="\033[41m"
+purple="\033[0;95m"
+white="\033[1;97m"
+yellow="\033[0;93m"
+reset="\033[0m"
 
 PATH="/c/Users/$USERNAME/Documents/ffmpeg:$PATH"
 
@@ -22,31 +25,31 @@ HISTTIMEFORMAT="[%a %d %T] "
 shopt -s histappend
 
 if ! net session &> /dev/null; then
-	PS1='\[\033]0;$PWD\007\]\n 🡡 \[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\]\n\[\033[0;92m\][azzy \[\033[0;95m\]\w] \[\033[0m\]➤ '
+	PS1="\[\033]0;$PWD\007\]\n 🡡 \[$white\]\[$redbg\] \D{%a %d} \[$bluebg\] \t \[$reset\]\n\[$green\][azzy \[$purple\]\w] \[$reset\]➤ "
 else
-	PS1='\[\033]0;admin: $PWD\007\]\n 🡡 \[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\]\n\[\033[0;91m\][admin@\[\033[0;92m\]azzy \[\033[0;95m\]\w] \[\033[0m\]➤ '
+	PS1="\[\033]0;admin: $PWD\007\]\n 🡡 \[$white\]\[$redbg\] \D{%a %d} \[$bluebg\] \t \[$reset\]\n\[$red\][admin@\[$green\]azzy \[$purple\]\w] \[$reset\]➤ "
 	cd /
 	schtasks -create -tn "git-bash-admin" -sc ONCE -st 01:09 -tr "$EXEPATH\git-bash-admin.exe" -f -rl HIGHEST &> /dev/null
 	reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\Open Git-Bash here\command" -d "$EXEPATH\git-bash.exe" -t REG_SZ -f 1> /dev/null
 fi
 
-PS0=' 🡣 \[\033[1;97m\]\[\033[41m\] \D{%a %d} \[\033[44m\] \t \[\033[0m\]\n'
+PS0=" 🡣 \[$white\]\[$redbg\] \D{%a %d} \[$bluebg\] \t \[$reset\]\n"
 PS2='➤➤ '
 
-alias c='clear'
-alias desk='explorer.exe \\Users\\"$USERNAME"\\Desktop'
-alias diff='git diff --color=always 2>&1 | sed "/^warning: /d; /^The file/d"'
-alias doc='explorer.exe \\Users\\"$USERNAME"\\Documents'
-alias down='explorer.exe \\Users\\"$USERNAME"\\Downloads'
-alias fetch='bash <(curl -s https://raw.githubusercontent.com/dylanaraps/neofetch/master/neofetch)'
-alias gitlog='git log --pretty=format:"%h - %an, %ar | %s" | fzy -l 25 -p "Search commit history: "'
-alias hades='bash <(curl -s https://del.dog/raw/hadesqissues)'
-alias nosleep='bash /c/Users/"$USERNAME"/Documents/scripts/nosleep.sh'
-alias nosleeprec='bash /c/Users/"$USERNAME"/Documents/scripts/nosleep.sh bash /c/Users/"$USERNAME"/Documents/scripts/priv/screenrecord.sh'
-alias pray='bash /c/Users/"$USERNAME"/Documents/scripts/priv/masjidtime.sh || bash <(curl -s https://raw.githubusercontent.com/AzzyC/scripts/main/priv/masjidtime.sh)'
-alias rec='bash /c/Users/"$USERNAME"/Documents/scripts/priv/screenrecord.sh'
-alias user='explorer.exe \\Users\\"$USERNAME"'
-alias weather='curl -s wttr.in/M19\ 1RG'
+alias c="clear"
+alias desk="cd /c/Users/$USERNAME/Desktop"
+alias diff="git diff --color=always 2>&1 | sed '/^warning: /d; /^The file/d'"
+alias doc="cd /c/Users/$USERNAME/Documents"
+alias down="cd /c/Users/$USERNAME/Documents"
+alias fetch="bash <(curl -s https://raw.githubusercontent.com/dylanaraps/neofetch/master/neofetch)"
+alias gitlog="git log --pretty=format:'%h - %an, %ar | %s' | fzy -l 25 -p 'Search commit history: '"
+alias hades="bash <(curl -s https://del.dog/raw/hadesqissues)"
+alias nosleep="bash /c/Users/$USERNAME/Documents/scripts/nosleep.sh"
+alias nosleeprec="bash /c/Users/$USERNAME/Documents/scripts/nosleep.sh bash /c/Users/$USERNAME/Documents/scripts/priv/screenrecord.sh"
+alias pray="bash /c/Users/$USERNAME/Documents/scripts/priv/masjidtime.sh || bash <(curl -s https://raw.githubusercontent.com/AzzyC/scripts/main/priv/masjidtime.sh)"
+alias rec="bash /c/Users/$USERNAME/Documents/scripts/priv/screenrecord.sh"
+alias user="cd /c/Users/$USERNAME"
+alias weather="curl -s 'wttr.in/M19 1RG' | sed '/^Follow/d'"
 
 admin () {
 	cp -n /git-bash.exe /git-bash-admin.exe
@@ -55,6 +58,26 @@ admin () {
 		echo -e "${red}Must launch git-bash via UAC prompt once${reset}"
 		explorer "$EXEPATH"\\git-bash-admin.exe
 	fi
+}
+
+bigfilesearch () {
+	currentdir="$(pwd)"
+	cd ~
+	file="$(fd -a -E Apple -E 1 -E '3D Objects' -E ansel -E Contacts -E Favorites -E Links\
+	-E Music -E Pictures -E 'Saved Games' -E Videos -E Searches | sort | fzy -l 25 -p "Search files: ")"
+	if [[ -n "$file" ]]; then
+		echo -ne "$yellow"
+		echo -E "$file"
+		echo -ne "\n${green}What would you like to do with file? Open, Remove (o/R):${reset} "
+		read -r -n 2 action
+		if [[ "$action" =~ ^[Oo]$ ]]; then
+			explorer "$file"
+		fi
+		if [[ "$action" =~ ^[Rr]$ ]]; then
+			rm -v "$file"
+		fi
+	fi
+	cd "$currentdir"
 }
 
 cheat () {
@@ -70,7 +93,7 @@ crop () {
 	read -r end
 	echo -ne "Name of cropped video: "
 	read -r outputfile
-	echo -e "${cyan}"
+	echo -e "${blue}"
 
 	mkdir -p /c/Users/"$USERNAME"/Desktop/ScreenRecord/
 	ffmpeg -loglevel warning -stats -i "$inputfile" -ss "$begin" -to "$end" -c:v libx264 -vsync 2 -y /c/Users/"$USERNAME"/Desktop/ScreenRecord/"$outputfile".mp4
@@ -79,7 +102,7 @@ crop () {
 }
 
 ffmpegcheck () {
-	ffmpeg -loglevel quiet 2> /dev/null
+	ffmpeg -loglevel quiet 2>&-
 	if [[ $? -eq 127 ]]; then
 		echo -e "\n${yellow}ffmpeg is not installed\n${green}Downloading latest.."
 		curl -L --progress-bar "$(curl -s https://github.com/GyanD/codexffmpeg/releases\
@@ -94,7 +117,7 @@ ffmpegcheck () {
 }
 
 fzycheck () {
-	echo -e "${cyan}If you can see this, you have fzy installed" | fzy 2> /dev/null
+	echo -e "${blue}If you can see this, you have fzy installed" | fzy 2>&-
   if [[ "$?" -eq 127 ]]; then
     echo -e "${yellow}fuzzy not installed${green}"
     currentdir="$PWD"
@@ -115,10 +138,10 @@ history () {
 	read -r -a select <<< "$(builtin history | tac | fzy -l 25 -p 'Search history: ' | awk '{$1=$2=$3=$4=""; print $0}')"
 	if [ -n "$select" ]; then
 		builtin history -s 'history'
-		builtin history -s "$(echo -E "${select[@]}")"
+		builtin history -s "$(echo -nE "${select[@]}")"
 		echo -ne "${yellow}"
 		echo -E "${select[@]}"
-		echo -e "\n${cyan}Use 🡡 to edit and/or run this command${reset}"
+		echo -e "${blue}Use 🡡 to edit and/or run this command${reset}"
 	fi
 }
 
@@ -133,7 +156,7 @@ regedit.exe () {
 
 src () {
 	source /etc/bash.bashrc
-	echo -e "\n${yellow}b${cyan}a${yellow}s${red}h${white}rc ${cyan}s${yellow}o${green}u${red}r${white}c${yellow}e${cyan}d!${reset}"
+	echo -ne "\n${yellow}b${blue}a${yellow}s${red}h${white}r${purple}c ${blue}s${yellow}o${green}u${red}r${white}c${yellow}e${blue}d!${reset}"
 }
 
 ss () {
@@ -141,7 +164,7 @@ ss () {
 	inputfile="$(sed 's/'\''//g' <<< "$1")"
 	echo -ne "\n${green}Video timestamps to be screenshotted [HH:MM:SS] [00:00:00]: "
 	read -r -a stamps
-	echo -ne "${cyan}"
+	echo -ne "${blue}"
 	mkdir -p /c/Users/"$USERNAME"/Desktop/ScreenRecord/
 
 	i=1
