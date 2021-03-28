@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-read -r -a prayertimelist <<< "$(curl -s https://shahjalalmosque.org/ | grep Begins -A 1 | sed 'N;s/\n/ /; s/<[^>]\+>/ /g; s/Begins//')"
+read -r -a prayertimelist <<< "$(curl -s https://shahjalalmosque.org/ | grep Begins -A 1 | sed 'N;s/\n/ /; s/<[^>]*>/ /g; s/Begins//')"
 
-[ "$(cut -d ':' -f1 <<< "${prayertimelist[2]}")" -le '12' ] && zuhr="${prayertimelist[2]}" || zuhr="$(date -d "${prayertimelist[2]} +13 hours" +'%H:%M')"
+zuhrhour="$(cut -d ':' -f1 <<< "${prayertimelist[2]}")"
+[ "$zuhrhour" -le '12' ] && [ "$zuhrhour" -ge 11 ] && zuhr="${prayertimelist[2]}" || zuhr="$(date -d "${prayertimelist[2]} +13 hours" +'%H:%M')"
 
 hrprayertimelist=( "${prayertimelist[0]}"
 "${prayertimelist[1]}"
