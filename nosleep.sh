@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 
 restore () {
-  powercfg -setactive "$activescheme" 2> /dev/null
-  powercfg -delete "$newscheme" 2> /dev/null
+  powercfg -setactive "$activescheme" 2>&-
+  powercfg -delete "$newscheme" 2>&-
 }
-trap restore SIGINT
+trap restore INT
 
 activescheme="$(powercfg -getactivescheme | awk '{print $4}')"
 newscheme="$(powercfg -duplicatescheme "$activescheme" | awk '{print $4}')"
