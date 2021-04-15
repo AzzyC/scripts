@@ -1,35 +1,35 @@
-#!/usr/bin/env bash
-read -r -a prayertimelist <<< "$(curl -s https://shahjalalmosque.org/ | grep Begins -A 1 | sed 'N;s/\n/ /; s/<[^>]*>/ /g; s/Begins//')"
+#!/bin/sh
+curl -s https://shahjalalmosque.org/ | grep Begins -A 1 | sed 'N;s/\n/ /; s/<[^>]*>/ /g; s/Begins//' > ./tempfile
 
-zuhrhour="$(cut -d ':' -f1 <<< "${prayertimelist[2]}")"
-[ "$zuhrhour" -le '12' ] && [ "$zuhrhour" -ge 11 ] && zuhr="${prayertimelist[2]}" || zuhr="$(date -d "${prayertimelist[2]} +14 hours" +'%H:%M')"
+zuhrhour="$(awk -F ":[0-9]{2}" '{print $3}' ./tempfile)"
+[ "$zuhrhour" -le '12' ] && [ "$zuhrhour" -ge 11 ] && z="$(awk '{print $3}' ./tempfile)" || z="$(date -d "$(awk '{print $3}' ./tempfile) +14 hours" +'%H:%M')"
 
-hrprayertimelist=( "${prayertimelist[0]}"
-"${prayertimelist[1]}"
-"${zuhr}"
-"$(date -d "${prayertimelist[3]} +14 hours" +'%H:%M')"
-"$(date -d "${prayertimelist[4]} +14 hours" +'%H:%M')"
-"$(date -d "${prayertimelist[5]} +14 hours" +'%H:%M')"
-)
+f="$(awk '{print $1}' ./tempfile)"
+s="$(awk '{print $2}' ./tempfile)"
+a="$(date -d "$(awk '{print $4}' ./tempfile) +14 hours" +'%H:%M')"
+m="$(date -d "$(awk '{print $5}' ./tempfile) +14 hours" +'%H:%M')"
+i="$(date -d "$(awk '{print $6}' ./tempfile) +14 hours" +'%H:%M')"
+
+rm ./tempfile
 
 print_prayertimelist () {
   printf '%s\n' "Prayer Times ($(date +'%d/%m/%Y'))
-  Fajr: ${hrprayertimelist[0]}
-  Sunrise: ${hrprayertimelist[1]}
-  Zuhr: ${hrprayertimelist[2]}
-  Asr: ${hrprayertimelist[3]}
-  Maghrib: ${hrprayertimelist[4]}
-  Isha: ${hrprayertimelist[5]}"
+     Fajr: ${f}
+  Sunrise: ${s}
+     Zuhr: ${z}
+      Asr: ${a}
+  Maghrib: ${m}
+     Isha: ${i}"
 }
 
 now="$(date +%s)"
 
-[ "$now" -ge "$(date -d "${hrprayertimelist[5]}" +%s)" ] && {
+[ "$now" -ge "$(date -d "${i}" +%s)" ] && {
   print_prayertimelist
   printf '\n\033[1;92m%s\033[0m\n' 'Prayers completed for today, Alhamdulillah!'
 } ||
   print_prayertimelist |
-  for time in "${hrprayertimelist[@]}"; do
+  for time in "${f}" "${s}" "${z}" "${a}" "${m}" "${i}"; do
     pray="$(date -d "$time" +%s)"
     [ "$pray" -gt "$now" ] && {
       diff="$(( pray-now ))"
