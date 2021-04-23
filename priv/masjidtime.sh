@@ -1,16 +1,21 @@
 #!/bin/sh
-curl -s https://shahjalalmosque.org/ | grep Begins -A 1 | sed 'N;s/\n/ /; s/<[^>]*>/ /g; s/Begins//' > ./tempfile
 
-zuhrhour="$(awk -F ":[0-9]{2}" '{print $3}' ./tempfile)"
-[ "$zuhrhour" -le '12' ] && [ "$zuhrhour" -ge 11 ] && z="$(awk '{print $3}' ./tempfile)" || z="$(date -d "$(awk '{print $3}' ./tempfile) +14 hours" +'%H:%M')"
+currentDate=".$(date +'%d%m%y')pray"
+tempFile="$HOME/$currentDate"
 
-f="$(awk '{print $1}' ./tempfile)"
-s="$(awk '{print $2}' ./tempfile)"
-a="$(date -d "$(awk '{print $4}' ./tempfile) +14 hours" +'%H:%M')"
-m="$(date -d "$(awk '{print $5}' ./tempfile) +14 hours" +'%H:%M')"
-i="$(date -d "$(awk '{print $6}' ./tempfile) +14 hours" +'%H:%M')"
+[ -e "$tempFile" ] || curl -s 'https://shahjalalmosque.org' > "$tempFile"
+[ -e "${tempFile}2" ] || grep 'Begins' -A 1 "$tempFile" | sed 'N;s/\n/ /; s/<[^>]*>/ /g; s/Begins//' > "${tempFile}2"
 
-rm ./tempfile
+zuhrhour="$(awk -F ":[0-9]{2}" '{print $3}' "${tempFile}2")"
+[ "$zuhrhour" -le '12' ] && [ "$zuhrhour" -ge 11 ] && z="$(awk '{print $3}' "${tempFile}2")" || z="$(date -d "$(awk '{print $3}' "${tempFile}2") +14 hours" +'%H:%M')"
+
+f="$(awk '{print $1}' "${tempFile}2")"
+s="$(awk '{print $2}' "${tempFile}2")"
+a="$(date -d "$(awk '{print $4}' "${tempFile}2") +14 hours" +'%H:%M')"
+m="$(date -d "$(awk '{print $5}' "${tempFile}2") +14 hours" +'%H:%M')"
+i="$(date -d "$(awk '{print $6}' "${tempFile}2") +14 hours" +'%H:%M')"
+
+find ~ -maxdepth 1 ! -name "${currentDate}*" -name '*pray*' -exec rm '{}' \;
 
 print_prayertimelist () {
   printf '%s\n' "Prayer Times ($(date +'%d/%m/%Y'))

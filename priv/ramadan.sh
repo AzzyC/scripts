@@ -1,15 +1,18 @@
 #!/bin/sh
-curl -s https://shahjalalmosque.org > ./tempfile
-grep 'Begins' -A 1 ./tempfile | sed 'N;s/\n/ /; s/<[^>]*>/ /g; s/Begins//' > ./tempfile2
+currentDate=".$(date +'%d%m%y')pray"
+tempFile="$HOME/$currentDate"
 
-f="$(awk '{print $1}' ./tempfile2)"
-s="$(awk '{print $2}' ./tempfile2)"
-m="$(date -d "$(awk '{print $5}' ./tempfile2) +14 hours" +'%H:%M')"
+[ -e "$tempFile" ] || curl -s 'https://shahjalalmosque.org' > "$tempFile"
+[ -e "${tempFile}2" ] || grep 'Begins' -A 1 "$tempFile" | sed 'N;s/\n/ /; s/<[^>]*>/ /g; s/Begins//' > "${tempFile}2"
 
-days="$(grep "$(date +'%d %B')" ./tempfile | awk '{print $7}')"
-[ -n "$days" ] && r="$(( days-1 ))"
+f="$(awk '{print $1}' "${tempFile}2")"
+s="$(awk '{print $2}' "${tempFile}2")"
+m="$(date -d "$(awk '{print $5}' "${tempFile}2") +14 hours" +'%H:%M')"
 
-rm ./tempfile ./tempfile2
+days="$(grep "$(date +'%d %B')" "${tempFile}" | awk '{print $7}')"
+[ -n "$days" ] && r="$(( days-1 ))" || rm "${tempFile}" "${tempFile}2"
+
+find ~ -maxdepth 1 ! -name "${currentDate}*" -name '*pray*' -exec rm '{}' \;
 
 print_prayertimelist () {
   printf '%s\n' "Prayer Times ($(date +'%d/%m/%Y'))
@@ -23,6 +26,7 @@ now="$(date +%s)"
 [ "$now" -ge "$(date -d "${m}" +%s)" ] && {
   print_prayertimelist
   printf '\n\033[1;92m%s\033[0m\n' "${r} fasts completed, Alhamdulillah!"
+  exit 0
 } || {
   print_prayertimelist |
   for time in "${f}" "${m}"; do
@@ -34,4 +38,5 @@ now="$(date +%s)"
     }
   done
   printf '\n\033[1;92m%s\033[0m\n' "$((r-1)) fasts completed, Alhamdulillah!"
+  exit 1
 }
