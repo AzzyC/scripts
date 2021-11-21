@@ -11,9 +11,9 @@ zuhrhour="$(awk -F ":[0-9]{2}" '{print $3}' "${tempFile}2")"
 
 f="$(awk '{print $1}' "${tempFile}2")"
 s="$(awk '{print $2}' "${tempFile}2")"
-a="$(date -d "$(awk '{print $4}' "${tempFile}2") +14 hours" +'%H:%M')"
-m="$(date -d "$(awk '{print $5}' "${tempFile}2") +14 hours" +'%H:%M')"
-i="$(date -d "$(awk '{print $6}' "${tempFile}2") +14 hours" +'%H:%M')"
+a="$(date -d "$(awk '{print $4}' "${tempFile}2") +13 hours" +'%H:%M')"
+m="$(date -d "$(awk '{print $5}' "${tempFile}2") +13 hours" +'%H:%M')"
+i="$(date -d "$(awk '{print $6}' "${tempFile}2") +13 hours" +'%H:%M')"
 
 find ~ -maxdepth 1 ! -name "${currentDate}*" -name '*pray*' -exec rm '{}' \;
 
