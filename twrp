@@ -1,97 +1,87 @@
-#!/usr/bin/env sh
+#
+# Automate (clean) installation of ROM's
+# Generates another file, see "$ors", which will move into /cache/recovery and trigger upon booting into recovery
+# The generated file, at "$ors", uses OpenRecoveryScript commands: https://twrp.me/faq/openrecoveryscript.html
+#
 
-# This script will automate the (clean) installation of ROM's
-# It will generate another file (see "$ors"), which will be moved into /cache/recovery and start the User choices
-# The generated file, at "$ors", will use OpenRecoveryScript language: https://twrp.me/faq/openrecoveryscript.html
-
-install="/sdcard/ADM" # Configure this to the path of where you save your ROM files
+install='/sdcard/ADM' # Configure this to the path of where you save your ROM files
 
 ors="$install/openrecoveryscript"
 
 h () {
   printf '%s\n' "" \
   "Usage:" \
-  "The script will follow the exact order of your input of the switches below" \
-  "i.e., If you want a clean install of a ROM, don't put -c after the ROM!" \
+  "This script will follow the exact order of your input of the switches below" \
+  "i.e., To clean install of a ROM, don't put -c after a ROM!" \
   "" \
   "-h      Print this help information" \
-  "-c      Wipe all partitions (NOT int. storage), for a clean install" \
+  "-ci     Wipe all partitions (NOT int. storage), for a clean install" \
   "-hq     Install HadesQ" \
   "-l18    Install Lineage 19.1" \
-  "-l19    Install Lineage 19.1" \
-  "-rem     Remove currently configured script and start again"
+  "-l19    Install Lineage 19.1"
 }
 
-c () {
-  printf '%s\n' "You chose to wipe all partitions for a clean install" ""
+ci () {
+  printf '%s\n' "Wiping all partitions for a clean install" ""
   clean='y'
   printf "%s\n" "wipe dalvik" "wipe system" "wipe data" "wipe cache" >> "$ors"
 }
 
 hq () {
   romname='HadesQ'
-  filename="hadesRom_Q_*.zip"
+  filename='hadesRom_Q_*.zip'
   install
 }
 
 l18 () {
   romname='Lineage 18.1'
-  filename="lineage-18.1-*.zip"
-  gapps="NikGapps*-arm64-11*.zip"
+  filename='lineage-18.1-*.zip'
+  gapps='NikGapps*-arm64-11*.zip'
   install
 }
 
 l19 () {
   romname='Lineage 19.1'
-  filename="lineage-19.1-*.zip"
-  gapps="NikGapps*-arm64-12.1*.zip"
+  filename='lineage-19.1-*.zip'
+  gapps='NikGapps*-arm64-12.1*.zip'
   install
 }
 
-rem () {
-  rm -rf "$ors" /cache/recovery/openrecoveryscript
-  printf '%s\n' "Removed from: $ors" "Removed from: /cache/recovery/openrecoveryscript" "" \
-  "You can reboot to recovery and no changes to partitions will occur!"
-}
-
-
 install () {
-  printf '%s\n' "You chose to install: $romname" "" \
-  "Latest $romname found in $install: $filename" ""
-  printf '%s\n' "install $(ls -At "$install"/$filename | head -n 1)" >> "$ors"
+  rompath="$(ls -ft "$install"/$filename | head -n 1)"
+  gappspath="$(ls -ft "$install"/$gapps | head -n 1)"
+
+  printf '%s\n' "You chose to install: $romname" \
+  "> Latest $romname found: $rompath" ""
+  printf '%s\n' "install $rompath" >> "$ors"
+
   {
     [ "$clean" = 'y' ] && [ -n "$gapps" ]
   } && \
-  printf '%s\n' "install $(ls -At "$install"/$gapps | head -n 1)" >> "$ors"
+  printf '%s\n' "As /system partition wiped, installing GApps" \
+  "> Latest NikGapps found: $gappspath" ""
+  printf '%s\n' "install $gappspath" >> "$ors"
 }
 
-# End of modules
+# End of script modules
 
 {
   ! expr "$*" : ".*-h.*" > /dev/null && \
-  ! expr "$*" : ".*-c.*" > /dev/null && \
+  ! expr "$*" : ".*-ci.*" > /dev/null && \
   ! expr "$*" : ".*-hq.*" > /dev/null && \
   ! expr "$*" : ".*-l18.*" > /dev/null && \
-  ! expr "$*" : ".*-l19.*" > /dev/null && \
-  ! expr "$*" : ".*-rem.*" > /dev/null
+  ! expr "$*" : ".*-l19.*" > /dev/null
 } && \
 h \
 || {
-  mv "$ors" "$ors.bak"
-  touch "$ors"
+  printf '%s' "" > "$ors" # Initialise a file to append to
   for switches in "$@"; do
     func="$(printf '%s' "$switches" | tr -d '-')"
     "$func" 2>&-
   done
 
   cp "$ors" /cache/recovery
-  printf '%s' "Would you like to reboot into recovery now? (y/N): "
-  while [ "$reboot" = "${reboot#[Yy|Nn]}" ]; do
-    read -r reboot
-
-    [ "$reboot" = "${reboot#[Yy|Nn]}" ] && \
-    printf '\n%s' "You did not input 'y'/'Y' or 'n'/'N'. Try again: "
-
-  done
-  [ "$reboot" != "${reboot#[Yy]}" ] && reboot recovery
 }
+
+unset install ors clean romname filename gapps switches func h ci hq l18 l19
+unset -f install
