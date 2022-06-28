@@ -16,7 +16,7 @@ white="\033[1;97m"
 yellow="\033[0;93m"
 reset="\033[0m"
 
-PATH="/c/Users/$USERNAME/Documents/ffmpeg:$PATH"
+PATH="/c/Users/$USERNAME/Documents/PortableGit/platform-tools:/c/Users/$USERNAME/Documents/ffmpeg:$PATH"
 
 HISTFILESIZE='3000'
 HISTSIZE='3000'
@@ -38,9 +38,7 @@ alias c="clear"
 alias diff="git diff --color=always 2>&1 | sed '/^warning: /d; /^The file/d'"
 alias fetch="bash <(curl -s https://raw.githubusercontent.com/dylanaraps/neofetch/master/neofetch)"
 alias gitlog="git log --pretty=format:'%h - %an, %ar | %s' | fzy -l 25 -p 'Search commit history: '"
-alias hades="bash <(curl -s https://del.dog/raw/hadesqissues)"
 alias nosleep="bash /c/Users/\$USERNAME/Documents/scripts/nosleep.sh"
-alias nosleeprec="bash /c/Users/\$USERNAME/Documents/scripts/nosleep.sh bash /c/Users/\$USERNAME/Documents/scripts/priv/screenrecord.sh"
 alias p="/c/Users/\$USERNAME/Documents/scripts/priv/masjidtime.sh || curl -s https://raw.githubusercontent.com/AzzyC/scripts/main/priv/masjidtime.sh | dash"
 alias r="bash /c/Users/\$USERNAME/Documents/scripts/priv/screenrecord.sh"
 alias ram="dash /c/Users/\$USERNAME/Documents/scripts/priv/ramadan.sh"
@@ -49,27 +47,9 @@ admin () {
 	cp -n /git-bash.exe /git-bash-admin.exe
 	reg add "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" -v "$EXEPATH\git-bash-admin.exe" -t REG_SZ -d RUNASADMIN -f >&-
 	schtasks -run -i -tn "git-bash-admin" >&- 2>&- || {
-		printf "${red}%s${reset}" 'Must launch git-bash via UAC prompt once'
+		printf "${red}%s${reset}" 'Must launch git-bash as admin via UAC prompt once'
 		explorer "$EXEPATH"\\git-bash-admin.exe
 	}
-}
-
-bigfilesearch () {
-	currentdir="$(pwd)"
-	cd ~ || return 1
-	file="$(fd -a -E Apple -E 1 -E '3D Objects' -E ansel -E Contacts -E Favorites -E Links\
-	-E Music -E Pictures -E 'Saved Games' -E Videos -E Searches | sort | fzy -l 25 -p "Search files: ")"
-	if [ -n "$file" ]; then
-		printf "${yellow}${file}\n${green}%s${reset}" 'What would you like to do with file? Open, Remove (o/R): '
-		read -r action
-		if printf '%s' "$action" | grep -i 'O'; then
-			explorer "$file"
-		fi
-		if printf '%s' "$action" | grep -i 'R'; then
-			rm -v "$file"
-		fi
-	fi
-	cd "$currentdir" || return 1
 }
 
 cheat () {
@@ -127,24 +107,15 @@ fzycheck () {
 }
 
 h () {
-	history | tac | fzy -l 25 -p 'Search history: ' | awk '{$1=$2=$3=$4=""; print $0}' > ./history
-	[ -s ./history ] && {
-		selected="$(cat ./history)"
+	history | tac | fzy -l 25 -p 'Search history: ' | awk '{$1=$2=$3=$4=""; print $0}' > ~/history
+	[ -s ~/history ] && {
+		selected="$(cat ~/history)"
 		history -s 'history'
 		history -s $selected
 		printf "${yellow}%s " $selected
 		printf "\n${blue}%s${reset}" 'Use Up arrow to edit and/or run this command'
 	}
-	rm ./history
-}
-
-regedit () {
-	schtasks -create -tn "regedit" -sc ONCE -st 01:09 -tr "C:\Windows\regedit.exe" -f -rl HIGHEST >&- 2>&-
-	schtasks -run -i -tn "regedit" >&- 2>&- || {
-		printf "${red}%s\n${reset}" "'regedit' task does not exist!" 'Run this alias while admin once'
-		explorer "$SYSTEMROOT"\\regedit.exe
-		admin
-	}
+	rm ~/history
 }
 
 src () {
@@ -172,25 +143,4 @@ weather () {
 	grep -E "(To|title|description|pub)" ./weather \
 		| sed "s/Â//g; s/<pub.*//g; s/<[^>]*>//g; s/   *//g; 1,4d; s/Wind D.*Wind/Wind/g; s/Press.*Hum/Hum/g ; s/UV.*Pol/Pol/g; s/Sunrise/\nSunrise/g"
 	rm ./weather
-}
-
-ytaudio () {
-	ytcheck
-	[ "$#" -eq 0 ] &&	printf '%s\n' "First Paramter - Audio Format: e.g. 'flac' or 'best'" || youtube-dl.exe -x --audio-format "$@"
-}
-
-ytcheck () {
-	youtube-dl.exe --version >&- 2>&-
-	[ "$?" -eq 127 ] && {
-		printf "${yellow}%s\n${green}%s${reset}" 'youtube-dl is not installed' 'Downloading latest GitHub release..'
-		curl -L --progress-bar -o /usr/bin/youtube-dl.exe "$(curl -s https://github.com/ytdl-org/youtube-dl/releases\
-											| grep -m1 youtube-dl.exe\
-											| awk '{print $2}'\
-											| sed 's/href="/https:\/\/github.com/; s/"//g')"
-	}
-}
-
-ytdl () {
-	ytcheck
-	[ "$#" -eq 0 ] &&	youtube-dl.exe -h || youtube-dl.exe "$@"
 }
