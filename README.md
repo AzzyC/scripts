@@ -22,18 +22,16 @@
 <p>
 	<b>Prerequisites:</b>
 	<br>
-	<a target="_blank" href="https://github.com/git-for-windows/git/releases/">Git for Windows</a>' Bash Terminal
-	<br>
-	<em>~ PortableGit recommended - Requires <a href="https://www.7-zip.org/">7zip</a></em>
+	<a target="_blank" href="https://github.com/git-for-windows/git/releases/download/v2.34.1.windows.1/PortableGit-2.34.1-64-bit.7z.exe">Git for Windows</a>' Bash Terminal
 </p>
 
 <p>
-	<big><b>Windows Users may want to record their screen to review at a later time; whether it be a work meeting or an inconveniently timed class</b></big>
+	<big><b>Windows Users may want to record their screen to review at a later time; whether it be a class, meeting or an important task</b></big>
 	<br>
 	<br>
-	This script will source programs & libraries solely for the screen recording function, then commence a recording for a <b>default time limit of 2 hours and 15 minutes</b>
+	This script will source programs solely for the screen recording function, and then commence a recording with a <b>default time limit of 2 hours and 15 minutes</b>
 	<br>
-	&emsp;&emsp;<em>~ Time limit set in case of negligence and to prevent producing a several Gigabyte video; 2 hours is sensible for a common recording, with an extra 15 minutes for cushion</em>
+	&emsp;&emsp;<em>~ Time limit set in case of negligence and to prevent producing a several Gigabyte video</em>
 	<br>
 	<br>
 	Time limit can be manipulated by the User, as shown in the <a target="_blank" href="https://raw.githubusercontent.com/AzzyC/scripts/main/README_images/screenrecord.png">screenshot</a>:
@@ -51,13 +49,21 @@
 	&emsp;&emsp;<em>~ Shown in 3rd Example</em>
 	<br>
 	<br>
-	`<a target="_blank" href="https://ffmpeg.org/">ffmpeg</a>` is a fundamental component behind most recording programs, used for image/video conversions, trimming and streaming
+	`<a target="_blank" href="https://ffmpeg.org/">ffmpeg</a>` is the fundamental component within most recording programs, used for image/video conversions, trimming and streaming and therefore it is used in this script also
 	<br>
-	As well as capturing the screen, the script uses an audio sniffer library, which records internal audio as 'hear what you see', meaning you can have your PC on low volume or mute and still capture audio at normal volume for later review
-	<br><br>
-	<b>In essence, set a time limit (optional), start recording, join meeting/class and leave it on screen, PC on mute and proceed with a productive task
 	<br>
-	Later on, have the ability to skim through the dullness of the meeting/class</b>
+	However, as well as recording the screen, the script uses an audio sniffer library (by default), which captures internal audio as 'hear what you see', meaning you can have your PC on low volume, or even mute, and it will still capture audio at normal volume
+	<br>
+	&emsp;&emsp;Yet, you may want to capture your Microphone instead of the internal audio, whether it's a Headset or the PC built-in mic.
+	<br>
+	So, you will type the word 'mic' along with or without a set time limit, which was mentioned above
+	<br>
+	<br>
+	<b>Example scenario (early morning class):
+	<br>
+	Execute the script, along with a set time limit (optional), see that the recording has started, join class and leave it on screen, put PC sound to mute <em>(if not using 'mic')</em> and proceed with a productive task, such as going back to sleep
+	<br>
+	Later on, have the ability to skim through the dullness of the class</b>
 </p>
 
 <h3>
