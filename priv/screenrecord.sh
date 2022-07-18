@@ -20,7 +20,7 @@ su () {
 			\rPlease bash script again in the new terminal window, which has Administrator Privileges\n\nNo actions taken\e\!\nExiting..${reset}"
 			cp -n /git-bash.exe /git-bash-admin.exe
 			reg add "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" -v "$EXEPATH\git-bash-admin.exe" -t REG_SZ -d RUNASADMIN -f 1> /dev/null
-			sleep 3
+			sleep 5
 			explorer "$EXEPATH"\\git-bash-admin.exe
 		else
 			echo -e "\n${green}Launching Administrator Privileged Terminal to install libraries"
@@ -53,6 +53,8 @@ if [[ "$?" -eq 127 ]]; then
 	echo -e "ffmpeg installed${reset}"
 fi
 
+rec_devices="$(ffmpeg -hide_banner -list_devices true -f dshow -i dummy 2>&1)"
+
 if [[ ! -d /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/ ]]; then
 	echo -e "\n${yellow}Libs downloaded for Screen Recording will be stored in:${white} C:\Users\\\\${USERNAME}\Documents\ScreenRecordLibs"
 	mkdir -p /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/
@@ -81,8 +83,6 @@ rm -rf /c/Users/$USERNAME/Documents/ScreenRecordLibs/
 "\
 	> /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh
 	chmod +x /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh
-
-	rec_devices="$(ffmpeg -hide_banner -list_devices true -f dshow -i dummy 2>&1)"
 
 	if ! grep -q 'screen-capture' <<< "$rec_devices"; then
 		echo -e "\n${yellow}'screen-capture-recorder' lib is not installed"
@@ -115,7 +115,7 @@ if [ ! -d /c/Users/"$USERNAME"/Desktop/ScreenRecord/ ]; then
 	echo -e "\n${yellow}All recordings will be stored in:${white} C:\Users\\\\${USERNAME}\Desktop\ScreenRecord"
 fi
 
-if [ -n "$1" ]; then
+if [[ "$1" =~ [0-9] ]]; then
 	time="$1"
 else
 	time="02:15:00"
@@ -143,7 +143,21 @@ fi
 echo -e "\n${yellow}Recording Limit:${white} ${H}${M}${S}\n\n\
 \
 ${green}Script Started:${white} $(date +'%d-%m-%Y %H:%M:%S')\n${cyan}"
-ffmpeg -loglevel warning -stats -guess_layout_max 0 -rtbufsize 200M -f dshow -framerate 30 -i video="screen-capture-recorder":audio="virtual-audio-capturer" -t "$time" -c:v libx264 -vsync 2 -r 30 -preset fast -tune zerolatency -crf 30 -pix_fmt yuv420p -movflags +faststart -c:a aac -ac 2 -b:a 128k -y /c/Users/"$USERNAME"/Desktop/ScreenRecord/streaming.mp4
+
+if [[ "$*" =~ 'mic' ]]; then
+	if ! grep -q 'Microphone (Realtek(R) Audio)' <<< "$rec_devices"; then
+		echo -e "No Headset Microphone detected; using PC built-in Microphone instead\n"
+		audio='Microphone Array (Realtek(R) Audio)'
+	else
+		echo -e "Headset Microphone detected\n"
+		audio='Microphone (Realtek(R) Audio)'
+	fi
+
+	ffmpeg -loglevel warning -stats -guess_layout_max 0 -rtbufsize 200M -f dshow -framerate 30 -i video="screen-capture-recorder":audio="$audio" -t "$time" -c:v libx264 -vsync 2 -r 30 -preset fast -tune zerolatency -crf 30 -pix_fmt yuv420p -movflags +faststart -c:a aac -ac 2 -b:a 128k -y /c/Users/"$USERNAME"/Desktop/ScreenRecord/streaming.mp4
+	echo ''
+else
+	ffmpeg -loglevel warning -stats -guess_layout_max 0 -rtbufsize 200M -f dshow -framerate 30 -i video="screen-capture-recorder":audio="virtual-audio-capturer" -t "$time" -c:v libx264 -vsync 2 -r 30 -preset fast -tune zerolatency -crf 30 -pix_fmt yuv420p -movflags +faststart -c:a aac -ac 2 -b:a 128k -y /c/Users/"$USERNAME"/Desktop/ScreenRecord/streaming.mp4
+fi
 
 rec_end="$(date +'%a %d-%m-%Y %H:%M:%S')"
 file_rec_end="$(sed 's/:/-/g' <<< "$rec_end")"
