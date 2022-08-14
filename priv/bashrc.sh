@@ -23,6 +23,7 @@ alias c="clear"
 alias fetch="bash <(curl -s https://raw.githubusercontent.com/dylanaraps/neofetch/master/neofetch)"
 alias gitlog="git log --pretty=format:'%h - %an, %ar | %s' | fzy -l 25 -p 'Search commit history: '"
 alias p="/c/Users/\$USERNAME/Documents/scripts/priv/masjidtime.sh || curl -s https://raw.githubusercontent.com/AzzyC/scripts/main/priv/masjidtime.sh | dash"
+alias fuel="bash <(curl -s https://raw.githubusercontent.com/AzzyC/scripts/main/priv/fuel.sh)"
 
 cheat () {
 	curl -s cheat.sh/"$1"
