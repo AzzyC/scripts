@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 [ -z "$1" ] && {
   blue='\033[0;34m'
@@ -18,8 +18,10 @@
 
   lineNo="$(wc -l < "$newReport")"
 
-  read -ra fuel <<< "$(curl -s "https://www.fleetnews.co.uk/costs/fuel-prices/" | grep 'Premium Diesel PPG' -A 16 | tr -d '\n' | sed 's/<[^>]*>/ /g')"
-  fuelCost="$(awk "BEGIN {print (${fuel[4]}+${fuel[5]}) / 2 / 100}")"
+  fuel="$(curl -s "https://www.confused.com/petrol-prices/fuel-price-index" | grep -E 'price--petrol"|price--diesel"' | sed 's/<[^>]*>/ /g; s/p//')"
+  petrol="$(printf '%s' "$fuel" | head -n 1)"
+  diesel="$(printf '%s' "$fuel" | tail -n 1)"
+  fuelCost="$(awk "BEGIN {print (${petrol}+${diesel}) / 2 / 100}")"
 
   for i in $(seq 3 "$lineNo"); do
     sed -i "${i}s/$/,=(C${i}\/35)*4.54609188*$fuelCost/" "$newReport"
