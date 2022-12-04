@@ -21,13 +21,13 @@
   fuel="$(curl -s "https://www.confused.com/petrol-prices/fuel-price-index" | grep -E 'price--petrol"|price--diesel"' | sed 's/<[^>]*>/ /g; s/p//')"
   petrol="$(printf '%s' "$fuel" | head -n 1)"
   diesel="$(printf '%s' "$fuel" | tail -n 1)"
-  fuelCost="$(awk "BEGIN {print (${petrol}+${diesel}) / 2 / 100}")"
+  fuelCost="$(awk "BEGIN {print (${petrol}+${diesel}) / 1.9 / 100}")"
 
   printf '%s\n' \
-  "Avg. Petrol Cost:  $(awk "BEGIN {print ${petrol} / 100}")" \
-  "Avg. Diesel Cost:  $(awk "BEGIN {print ${diesel} / 100}")" \
-  "                  -------" \
-  "Avg. Fuel Cost:    $fuelCost"
+  "Avg. Petrol Cost:   $(awk "BEGIN {print ${petrol} / 100}")" \
+  "Avg. Diesel Cost:   $(awk "BEGIN {print ${diesel} / 100}")" \
+  "                   -------" \
+  "Chosen Fuel Cost:  $fuelCost"
 
   for i in $(seq 3 "$lineNo"); do
     sed -i "${i}s/$/,=(C${i}\/35)*4.54609188*$fuelCost/" "$newReport"
@@ -36,15 +36,14 @@
   sed -i \
   -e '2s/$/,Fuel Cost (£),,Miles -> Fuel Cost (£) =/' \
   -e "3s/$/,,( Miles \/ MPG (35) ) x 4.54609188 (litres in gallon) x Cost per litre (£$fuelCost)/" \
-  -e '4s/$/,,,> 1 Car: Carla; Grace; Jeff; Mill; Night; Teresa:/' "$newReport"
+  -e '6s/$/,,> 1 Car: Grace; Jeff; Mill; Night; Teresa:/' "$newReport"
 
-  carla="$(grep -in 'Carla' "$newReport" | tail -n1 | awk -F ':' '{print $1}')"
   grace="$(grep -in 'Grace' "$newReport" | tail -n1 | awk -F ':' '{print $1}')"
   jeff="$(grep -in 'Jeff' "$newReport" | tail -n1 | awk -F ':' '{print $1}')"
   mill="$(grep -in 'Mill' "$newReport" | tail -n1 | awk -F ':' '{print $1}')"
   night="$(grep -in 'Night' "$newReport" | tail -n1 | awk -F ':' '{print $1}')"
   tere="$(grep -in 'Tere' "$newReport" | tail -n1 | awk -F ':' '{print $1}')"
-  for car in "$carla" "$grace" "$jeff" "$mill" "$night" "$tere"; do
+  for car in "$grace" "$jeff" "$mill" "$night" "$tere"; do
     sed -i "${car}s/$/,---------->,=SUM(D${car}:D$((car - 1)))/" "$newReport"
   done
 
