@@ -42,11 +42,7 @@ export PATH="/c/Users/$USERNAME/Documents/ffmpeg:$PATH"
 ffmpeg -loglevel quiet 2> /dev/null
 if [[ "$?" -eq 127 ]]; then
 	echo -e "\n${yellow}ffmpeg is not installed\n${green}Downloading latest.."
-	curl -L --progress-bar "$(curl -s https://github.com/GyanD/codexffmpeg/releases\
-								| grep -m 1 'essentials.*zip'\
-								| awk '{print $2}'\
-								| sed 's/href="/https:\/\/github.com/; s/"//')"\
-								> /c/Users/"$USERNAME"/Documents/temp.zip
+	curl -L --progress-bar https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip -o /c/Users/"$USERNAME"/Documents/temp.zip
 	unzip -q /c/Users/"$USERNAME"/Documents/temp.zip -d /c/Users/"$USERNAME"/Documents/ && rm /c/Users/"$USERNAME"/Documents/temp.zip
 	mv /c/Users/"$USERNAME"/Documents/ffmpeg-*/bin /c/Users/"$USERNAME"/Documents/ffmpeg && rm -rf /c/Users/"$USERNAME"/Documents/ffmpeg-*/
 	reg add "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" -v "C:\Users\\${USERNAME}\Documents\ffmpeg\ffmpeg.exe" -t REG_SZ -d HIGHDPIAWARE -f 1> /dev/null
@@ -88,8 +84,7 @@ rm -rf /c/Users/$USERNAME/Documents/ScreenRecordLibs/
 		echo -e "\n${yellow}'screen-capture-recorder' lib is not installed"
 		su
 		echo -e "${green}Downloading.."
-		curl -L --progress-bar "https://github.com/ShareX/ShareX/blob/master/Lib/screen-capture-recorder-x64.dll?raw=true"\
-		> /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
+		curl -L --progress-bar "https://github.com/ShareX/ShareX/raw/master/Lib/screen-capture-recorder-x64.dll" -o /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
 		regsvr32 -s /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/screen-capture-recorder-x64.dll
 		sed -i '18s/#//' /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh
 		echo -e "'screen-capture-recorder' lib installed${reset}"
@@ -99,8 +94,7 @@ rm -rf /c/Users/$USERNAME/Documents/ScreenRecordLibs/
 		echo -e "\n${yellow}'virtual-audio-capturer' lib is not installed"
 		su
 		echo -e "${green}Downloading.."
-		curl -L --progress-bar "https://github.com/ShareX/ShareX/blob/master/Lib/virtual-audio-capturer-x64.dll?raw=true"\
-		> /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/virtual-audio-capturer-x64.dll
+		curl -L --progress-bar "https://github.com/ShareX/ShareX/raw/master/Lib/virtual-audio-capturer-x64.dll" -o /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/virtual-audio-capturer-x64.dll
 		regsvr32 -s /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/virtual-audio-capturer-x64.dll 1> /dev/null
 		sed -i '19s/#//' /c/Users/"$USERNAME"/Documents/ScreenRecordLibs/uninstalllibs.sh
 		echo -e "'virtual-audio-capturer' lib installed${reset}"
@@ -153,10 +147,10 @@ if [[ "$*" =~ 'mic' ]]; then
 		audio='Microphone (Realtek(R) Audio)'
 	fi
 
-	ffmpeg -loglevel warning -stats -guess_layout_max 0 -rtbufsize 200M -f dshow -framerate 30 -i video="screen-capture-recorder":audio="$audio" -t "$time" -c:v libx264 -vsync 2 -r 30 -preset fast -tune zerolatency -crf 30 -pix_fmt yuv420p -movflags +faststart -c:a aac -ac 2 -b:a 128k -y /c/Users/"$USERNAME"/Desktop/ScreenRecord/streaming.mp4
+	ffmpeg -loglevel warning -stats -guess_layout_max 0 -f dshow -thread_queue_size 1024 -rtbufsize 256M -audio_buffer_size 80 -framerate 30 -i video="screen-capture-recorder":audio="$audio" -t "$time" -c:v libx264 -r 30 -preset fast -tune zerolatency -crf 30 -pix_fmt yuv420p -movflags +faststart -c:a aac -ac 2 -b:a 128k -y /c/Users/"$USERNAME"/Desktop/ScreenRecord/streaming.mp4
 	echo ''
 else
-	ffmpeg -loglevel warning -stats -guess_layout_max 0 -rtbufsize 200M -f dshow -framerate 30 -i video="screen-capture-recorder":audio="virtual-audio-capturer" -t "$time" -c:v libx264 -vsync 2 -r 30 -preset fast -tune zerolatency -crf 30 -pix_fmt yuv420p -movflags +faststart -c:a aac -ac 2 -b:a 128k -y /c/Users/"$USERNAME"/Desktop/ScreenRecord/streaming.mp4
+	ffmpeg -loglevel warning -stats -guess_layout_max 0 -f dshow -thread_queue_size 1024 -rtbufsize 256M -audio_buffer_size 80 -framerate 30 -i video="screen-capture-recorder":audio="virtual-audio-capturer" -t "$time" -c:v libx264 -r 30 -preset fast -tune zerolatency -crf 30 -pix_fmt yuv420p -movflags +faststart -c:a aac -ac 2 -b:a 128k -y /c/Users/"$USERNAME"/Desktop/ScreenRecord/streaming.mp4
 fi
 
 rec_end="$(date +'%a %d-%m-%Y %H:%M:%S')"
