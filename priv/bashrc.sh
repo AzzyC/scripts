@@ -22,7 +22,8 @@ PS2='➤➤ '
 alias c="clear"
 alias fetch="bash <(curl -s https://raw.githubusercontent.com/dylanaraps/neofetch/master/neofetch)"
 alias gitlog="git log --pretty=format:'%h - %an, %ar | %s' | fzy -l 25 -p 'Search commit history: '"
-alias p="/c/Users/\$USERNAME/Documents/scripts/priv/masjidtime.sh || curl -s https://raw.githubusercontent.com/AzzyC/scripts/main/priv/masjidtime.sh | dash"
+alias p="bash <(curl -s https://raw.githubusercontent.com/AzzyC/scripts/main/priv/masjidtime.sh)"
+alias ram="bash <(curl -s https://raw.githubusercontent.com/AzzyC/scripts/main/priv/ramadan.sh)"
 alias fuel="bash <(curl -s https://raw.githubusercontent.com/AzzyC/scripts/main/priv/fuel.sh)"
 
 cheat () {
@@ -41,10 +42,21 @@ h () {
 	rm ~/history
 }
 
+if [ -n "$TERMUX_VERSION" ]; then
+
+	if ! grep -q bashrc.sh /data/data/com.termux/files/usr/etc/bash.bashrc; then
+		printf '\n%s\n' ". <(curl -s 'https://raw.githubusercontent.com/AzzyC/scripts/main/priv/bashrc.sh')" \
+		>> /data/data/com.termux/files/usr/etc/bash.bashrc
+	fi
+
+	alias r="bash <(curl -s https://raw.githubusercontent.com/AzzyC/scripts/main/priv/ramadan.sh)"
+
+fi
+
 if [ "$OS" = 'Windows_NT' ]; then
 
 	if ! grep -q bashrc.sh /etc/bash.bashrc; then
-		printf '\n%s\n' ". /c/Users/$USERNAME/Documents/scripts/priv/bashrc.sh\
+		printf '\n%s\n' ". /c/Users/$USERNAME/Documents/scripts/priv/bashrc.sh 2>&-\
 		|| . <(curl -s 'https://raw.githubusercontent.com/AzzyC/scripts/main/priv/bashrc.sh')" \
 		>> /etc/bash.bashrc
 	fi
@@ -61,7 +73,6 @@ if [ "$OS" = 'Windows_NT' ]; then
 
 	alias nosleep="bash /c/Users/\$USERNAME/Documents/scripts/nosleep.sh"
 	alias r="bash /c/Users/\$USERNAME/Documents/scripts/priv/screenrecord.sh"
-	alias ram="dash /c/Users/\$USERNAME/Documents/scripts/priv/ramadan.sh"
 
 	admin () {
 		cp -n /git-bash.exe /git-bash-admin.exe
