@@ -12,7 +12,7 @@ while true; do
 
   f="$(awk '{print $1}' "${tempFile}2")"
   s="$(awk '{print $2}' "${tempFile}2")"
-  m="$(( $(awk -F ':[0-9]{2}' '{print $5}' "${tempFile}2" | awk '{sub(/^  0*/,"");}1') + 12 )):$(awk -F '[0-9]{2}:' '{print $6}' "${tempFile}2")"
+  m="$(( $(awk -F ':[0-9]{2}' '{printf "%d\n", $5}' "${tempFile}2") + 12 )):$(awk -F '[0-9]{2}:' '{sub(/[[:space:]]+$/, "", $6); print $6}' "${tempFile}2")"
 
   isldate="$(grep "$(date +'%d %B')" "${tempFile}" | awk '{print $7,$8,$9}')"
   days="$(printf '%s' "$isldate" | awk '{print $1}')"
@@ -21,9 +21,9 @@ while true; do
   print_prayertimelist () {
     clear
     printf '%s\n' "" "Prayer Times: $(date +'%d/%m/%Y') | $isldate
-          Fajr: ${f}
-       Sunrise: ${s}
-       Maghrib: ${m}"
+        Fajr: ${f}
+     Sunrise: ${s}
+     Maghrib: ${m}"
   }
 
   now="$(date +%s)"
@@ -44,6 +44,6 @@ while true; do
     printf '\n\033[1;92m%s\033[0m\n' "$((days - 1)) fasts completed, Alhamdulillah!"
   }
 
-  [ "$1" = loop ] || exit
+  [ "$1" = loop ] || exit 0
 
 done
