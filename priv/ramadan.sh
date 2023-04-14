@@ -19,7 +19,6 @@ while true; do
   [ -n "$days" ] || rm "${tempFile}" "${tempFile}2"
 
   print_prayertimelist () {
-    clear
     printf '%s\n' "" "Prayer Times: $(date +'%d/%m/%Y') | $isldate
         Fajr: ${f}
      Sunrise: ${s}
@@ -28,6 +27,7 @@ while true; do
 
   now="$(date +%s)"
 
+  clear
   [ "$now" -ge "$(date -d "${m}" +%s)" ] && {
     print_prayertimelist
     printf '\n\033[1;92m%s\033[0m\n' "$days fasts completed, Alhamdulillah!"
@@ -45,5 +45,15 @@ while true; do
   }
 
   [ "$1" = loop ] || exit 0
+
+  [ -f ~/alarm.mp3 ] || curl -o ~/alarm.mp3 https://cdn.pixabay.com/download/audio/2022/06/12/audio_eb85589880.mp3?filename=oversimplified-alarm-clock-113180.mp3
+
+  { [ "$now" -ge "$(date -d "${m}" +%s)" ] && [ "$now" -le "$(date -d "${m} + 1 minute" +%s)" ]; } && {
+    play -q ~/alarm.mp3 2>&- || pkg install sox 2>&-
+  }
+
+  { [ "$now" -ge "$(date -d "${f} 16 minutes ago" +%s)" ] && [ "$now" -le "$(date -d "${f} 15 minutes ago" +%s)" ]; } && {
+    play -q ~/alarm.mp3 2>&- || pkg install sox 2>&-
+  }
 
 done
